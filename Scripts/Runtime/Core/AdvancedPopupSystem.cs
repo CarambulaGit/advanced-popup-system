@@ -62,6 +62,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -73,6 +74,7 @@ namespace AdvancedPS.Core
             tasks.Clear();
             foreach (IAdvancedPopup popup in _popup)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Show(deepShow, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -102,6 +104,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide<T>(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -113,6 +116,7 @@ namespace AdvancedPS.Core
             tasks.Clear();
             foreach (IAdvancedPopup popup in _popup)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Show<T>(deepShow, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -143,6 +147,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide<T, J>(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -154,6 +159,7 @@ namespace AdvancedPS.Core
             tasks.Clear();
             foreach (IAdvancedPopup popup in _popup)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Show<T, J>(deepShow, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -176,6 +182,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -193,6 +200,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide<T>(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
@@ -211,6 +219,7 @@ namespace AdvancedPS.Core
             List<Task> tasks = new List<Task>();
             foreach (IAdvancedPopup popup in _popups)
             {
+                popup.StopAnim();
                 tasks.Add(popup.Hide<T, J>(deepHide, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
