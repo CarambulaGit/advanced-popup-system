@@ -22,18 +22,18 @@ namespace AdvancedPS.Core.Popup
 
         public virtual void OnCloseButtonPress()
         {
-            Hide<SmoothScaleDisplay>(true).ConfigureAwait(false);
+            Hide(true).ConfigureAwait(false);
         }
     
         public virtual void Subscribe()
         {
-            _closeButton.onClick.AddListener(OnCloseButtonPress);
+            if(_closeButton)_closeButton.onClick.AddListener(OnCloseButtonPress);
             _subscribed = true;
         }
 
         public virtual void Unsubscribe()
         {
-            _closeButton.onClick.RemoveListener(OnCloseButtonPress);
+            if(_closeButton)_closeButton.onClick.RemoveListener(OnCloseButtonPress);
             _subscribed = false;
         }
 

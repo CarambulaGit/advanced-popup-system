@@ -138,6 +138,13 @@ namespace AdvancedPS.Core
         #endregion
 
         /// <summary>
+        /// Manual stop animation
+        /// </summary>
+        public virtual void StopAnim()
+        {
+            UpdateCancellationTokenSource();
+        }
+        /// <summary>
         /// Stop previous task's and start new.
         /// </summary>
         protected virtual CancellationToken UpdateCancellationTokenSource()
