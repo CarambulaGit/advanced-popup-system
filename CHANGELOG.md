@@ -1,5 +1,9 @@
 # Changelog
 
+## [1.0.5] - 2024-7-19
+### Remove
+- Fix reopening popups
+
 ## [1.0.4] - 2023-4-21
 ### Remove
 - Show/hide popups by name
