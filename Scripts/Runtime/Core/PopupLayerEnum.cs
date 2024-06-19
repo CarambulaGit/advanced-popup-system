@@ -1,6 +1,7 @@
 namespace AdvancedPS.Core.Enum
 {
-    [System.Flags] public enum PopupLayerEnum
+    [System.Flags]
+    public enum PopupLayerEnum
     {
         LOGIN = 1 << 0,
         REGISTRATION = 1 << 1,

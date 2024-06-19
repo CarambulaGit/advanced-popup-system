@@ -9,174 +9,229 @@ namespace AdvancedPS.Core.Popup
     [RequireComponent(typeof(CanvasGroup))]
     public class AdvancedPopup : IAdvancedPopup
     {
-        public CanvasGroup _canvasGroup;
-        public Button _closeButton;
-    
+        public Button closeButton;
+        
+        [HideInInspector] public CanvasGroup canvasGroup;
+        
         private bool _subscribed;
 
+        /// <summary>
+        /// Initialize the popup.
+        /// </summary>
         public override void Init()
         {
-            _canvasGroup = GetComponent<CanvasGroup>();
+            canvasGroup = GetComponent<CanvasGroup>();
             base.Init();
         }
 
+        /// <summary>
+        /// Handler for close button press event.
+        /// </summary>
         public virtual void OnCloseButtonPress()
         {
-            Hide(true).ConfigureAwait(false);
+            Hide(true);
         }
-    
+
+        /// <summary>
+        /// Subscribe to the close button press event.
+        /// </summary>
         public virtual void Subscribe()
         {
-            if(_closeButton)_closeButton.onClick.AddListener(OnCloseButtonPress);
+            if (closeButton) closeButton.onClick.AddListener(OnCloseButtonPress);
             _subscribed = true;
         }
 
+        /// <summary>
+        /// Unsubscribe from the close button press event.
+        /// </summary>
         public virtual void Unsubscribe()
         {
-            if(_closeButton)_closeButton.onClick.RemoveListener(OnCloseButtonPress);
+            if (closeButton) closeButton.onClick.RemoveListener(OnCloseButtonPress);
             _subscribed = false;
         }
 
-        public override async Task Show(bool deepShow = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Show the popup.
+        /// </summary>
+        public override void Show(bool deepShow = false, CancellationToken cancellationToken = default)
+        {
+            _ = ShowAsync(deepShow, cancellationToken);
+        }
+        public override async Task ShowAsync(bool deepShow = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             if (!_subscribed)
                 Subscribe();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = base.CachedDisplay;
-            tasks.Add(popupDisplay.Show(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.ShowMethod(RootTransform, cancellationToken));
 
             if (deepShow)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Show(true, cancellationToken));
+                    tasks.Add(popup.ShowAsync(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
 
-        public override async Task Show<T>(bool deepShow = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Show the popup with a specific display type.
+        /// </summary>
+        public override void Show<T>(bool deepShow = false, CancellationToken cancellationToken = default)
+        {
+            _ = ShowAsync<T>(deepShow, cancellationToken);
+        }
+        public override async Task ShowAsync<T>(bool deepShow = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             if (!_subscribed)
                 Subscribe();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.Show(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.ShowMethod(RootTransform, cancellationToken));
 
             if (deepShow)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Show<T>(true, cancellationToken));
+                    tasks.Add(popup.ShowAsync<T>(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
 
-        public override async Task Show<T, J>(bool deepShow = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Show the popup with specific display types for the popup and deep popups.
+        /// </summary>
+        public override void Show<T,J>(bool deepShow = false, CancellationToken cancellationToken = default)
+        {
+            _ = ShowAsync<T,J>(deepShow, cancellationToken);
+        }
+        public override async Task ShowAsync<T, J>(bool deepShow = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             if (!_subscribed)
                 Subscribe();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.Show(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.ShowMethod(RootTransform, cancellationToken));
 
             if (deepShow)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Show<J>(true, cancellationToken));
+                    tasks.Add(popup.ShowAsync<J>(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
 
-        public override async Task Hide(bool deepHide = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Hide the popup.
+        /// </summary>
+        public override void Hide(bool deepHide = false, CancellationToken cancellationToken = default)
+        {
+            _ = HideAsync(deepHide, cancellationToken);
+        }
+        public override async Task HideAsync(bool deepHide = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = base.CachedDisplay;
-            tasks.Add(popupDisplay.Hide(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.HideMethod(RootTransform, cancellationToken));
 
             if (deepHide)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Hide(true, cancellationToken));
+                    tasks.Add(popup.HideAsync(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
-        
+
             if (_subscribed)
                 Unsubscribe();
         }
 
-        public override async Task Hide<T>(bool deepHide = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Hide the popup with a specific display type.
+        /// </summary>
+        public override void Hide<T>(bool deepHide = false, CancellationToken cancellationToken = default)
+        {
+            _ = HideAsync<T>(deepHide, cancellationToken);
+        }
+        public override async Task HideAsync<T>(bool deepHide = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.Hide(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.HideMethod(RootTransform, cancellationToken));
 
             if (deepHide)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Hide<T>(true, cancellationToken));
+                    tasks.Add(popup.HideAsync<T>(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
-        
+
             if (_subscribed)
                 Unsubscribe();
         }
 
-        public override async Task Hide<T, J>(bool deepHide = false, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Hide the popup with specific display types for the popup and deep popups.
+        /// </summary>
+        public override void Hide<T,J>(bool deepHide = false, CancellationToken cancellationToken = default)
+        {
+            _ = HideAsync<T,J>(deepHide, cancellationToken);
+        }
+        public override async Task HideAsync<T, J>(bool deepHide = false, CancellationToken cancellationToken = default)
         {
             if (cancellationToken == default)
                 cancellationToken = UpdateCancellationTokenSource();
-        
+
             List<Task> tasks = new List<Task>();
-        
+
             IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.Hide(RootTransform, cancellationToken));
+            tasks.Add(popupDisplay.HideMethod(RootTransform, cancellationToken));
 
             if (deepHide)
             {
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
-                    tasks.Add(popup.Hide<J>(true, cancellationToken));
+                    tasks.Add(popup.HideAsync<J>(true, cancellationToken));
                 }
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
-        
+
             if (_subscribed)
                 Unsubscribe();
         }

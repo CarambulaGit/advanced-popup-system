@@ -10,12 +10,6 @@ namespace AdvancedPS.Core
     public abstract class IAdvancedPopup : MonoBehaviour
     {
         /// <summary>
-        /// Popup unique ID.
-        /// </summary>
-        [Header("Settings")]
-        [Tooltip("Popup unique ID.")]
-        public string PopupName;
-        /// <summary>
         /// Layer of popup, check all layers where you expect this popup can be shown.
         /// </summary>
         [Tooltip("Layer of popup, check all layers where you expect this popup can be shown.")]
@@ -42,7 +36,7 @@ namespace AdvancedPS.Core
         /// </summary>
         protected IAdvancedPopupDisplay CachedDisplay { get; private set; }
         
-        private CancellationTokenSource _source;
+        protected CancellationTokenSource Source;
 
         private void Awake()
         {
@@ -70,12 +64,6 @@ namespace AdvancedPS.Core
 
             if (RootTransform == null)
                 RootTransform = transform;
-
-            if (string.IsNullOrEmpty(PopupName))
-            {
-                Debug.LogWarning($"IAdvancedPopup on '{gameObject.name}' object not set manual variable PopupName");
-                PopupName = gameObject.name;
-            }
         }
 
         /// <summary>
@@ -88,26 +76,48 @@ namespace AdvancedPS.Core
         }
 
         #region SHOW
-
+        /// <summary>
+        /// Show popup by CachedDisplay type without await.
+        /// </summary>
+        /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Show(bool deepShow = false, CancellationToken cancellationToken = default);
         /// <summary>
         /// Show popup by CachedDisplay type.
         /// </summary>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Show(bool deepShow = false, CancellationToken cancellationToken = default);
+        public abstract Task ShowAsync(bool deepShow = false, CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// Show popup by IAdvancedPopupDisplay generic T type for all popup's without await.
+        /// </summary>
+        /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Show<T>(bool deepShow = false, CancellationToken cancellationToken = default)
+            where T : IAdvancedPopupDisplay, new();
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for all popup's.
         /// </summary>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Show<T>(bool deepShow = false, CancellationToken cancellationToken = default)
+        public abstract Task ShowAsync<T>(bool deepShow = false, CancellationToken cancellationToken = default)
             where T : IAdvancedPopupDisplay, new();
+        
+        /// <summary>
+        /// Show popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups" without await.
+        /// </summary>
+        /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Show<T, J>(bool deepShow = false, CancellationToken cancellationToken = default)
+            where T : IAdvancedPopupDisplay, new()
+            where J : IAdvancedPopupDisplay, new();
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
         /// </summary>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Show<T, J>(bool deepShow = false, CancellationToken cancellationToken = default)
+        public abstract Task ShowAsync<T, J>(bool deepShow = false, CancellationToken cancellationToken = default)
             where T : IAdvancedPopupDisplay, new()
             where J : IAdvancedPopupDisplay, new();
         #endregion
@@ -115,24 +125,47 @@ namespace AdvancedPS.Core
 
         #region HIDE
         /// <summary>
+        /// Hide popup by CachedDisplay type without await.
+        /// </summary>
+        /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Hide(bool deepHide = false, CancellationToken cancellationToken = default);
+        /// <summary>
         /// Hide popup by CachedDisplay type.
         /// </summary>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Hide(bool deepHide = false, CancellationToken cancellationToken = default);
+        public abstract Task HideAsync(bool deepHide = false, CancellationToken cancellationToken = default);
+        
+        /// <summary>
+        /// Hide popup by IAdvancedPopupDisplay generic T type for all popup's without await.
+        /// </summary>
+        /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Hide<T>(bool deepHide = false, CancellationToken cancellationToken = default)
+            where T : IAdvancedPopupDisplay, new();
         /// <summary>
         /// Hide popup by IAdvancedPopupDisplay generic T type for all popup's.
         /// </summary>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Hide<T>(bool deepHide = false, CancellationToken cancellationToken = default)
+        public abstract Task HideAsync<T>(bool deepHide = false, CancellationToken cancellationToken = default)
             where T : IAdvancedPopupDisplay, new();
+        
+        /// <summary>
+        /// Hide popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups" without await.
+        /// </summary>
+        /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
+        /// <param name="cancellationToken"></param>
+        public abstract void Hide<T, J>(bool deepHide = false, CancellationToken cancellationToken = default)
+            where T : IAdvancedPopupDisplay, new()
+            where J : IAdvancedPopupDisplay, new();
         /// <summary>
         /// Hide popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
         /// </summary>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
         /// <param name="cancellationToken"></param>
-        public abstract Task Hide<T, J>(bool deepHide = false, CancellationToken cancellationToken = default)
+        public abstract Task HideAsync<T, J>(bool deepHide = false, CancellationToken cancellationToken = default)
             where T : IAdvancedPopupDisplay, new()
             where J : IAdvancedPopupDisplay, new();
         #endregion
@@ -147,15 +180,15 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Stop previous task's and start new.
         /// </summary>
-        protected virtual CancellationToken UpdateCancellationTokenSource()
+        protected CancellationToken UpdateCancellationTokenSource()
         {
-            if (_source != null)
+            if (Source != null)
             {
-                _source.Cancel();
-                _source.Dispose();
+                Source.Cancel();
+                Source.Dispose();
             }
-            _source = new CancellationTokenSource();
-            return _source.Token;
+            Source = new CancellationTokenSource();
+            return Source.Token;
         }
     }
 }

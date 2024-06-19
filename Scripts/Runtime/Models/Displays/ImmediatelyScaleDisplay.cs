@@ -6,29 +6,29 @@ namespace AdvancedPS.Core
 {
     public class ImmediatelyScaleDisplay : IAdvancedPopupDisplay
     {
-        private Vector3 _showScale;
-        private Vector3 _hideScale;
-        public override void Init()
+        protected Vector3 ShowScale;
+        protected Vector3 HideScale;
+        public override void InitMethod()
         {
-            _showScale = Vector3.one;
-            _hideScale = Vector3.zero;
+            ShowScale = Vector3.one;
+            HideScale = Vector3.zero;
         }
 
-        public override Task Show(Transform transform, CancellationToken cancellationToken = default)
+        public override Task ShowMethod(Transform transform, CancellationToken cancellationToken = default)
         {
             CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 1;
             canvasGroup.interactable = true;
             canvasGroup.blocksRaycasts = true;
         
-            transform.localScale = _showScale;
+            transform.localScale = ShowScale;
 
             return Task.CompletedTask;
         }
 
-        public override Task Hide(Transform transform, CancellationToken cancellationToken = default)
+        public override Task HideMethod(Transform transform, CancellationToken cancellationToken = default)
         {
-            transform.localScale = _hideScale;
+            transform.localScale = HideScale;
         
             CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 0;

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,8 +10,8 @@ namespace AdvancedPS.Core
 {
     public static class AdvancedPopupSystem
     {
-        private static readonly List<IAdvancedPopup> _popups = new List<IAdvancedPopup>();
-        private static readonly List<IAdvancedPopupDisplay> _displays = new List<IAdvancedPopupDisplay>();
+        private static readonly List<IAdvancedPopup> Popups = new List<IAdvancedPopup>();
+        private static readonly List<IAdvancedPopupDisplay> Displays = new List<IAdvancedPopupDisplay>();
         
         private static CancellationTokenSource _source;
 
@@ -19,8 +20,8 @@ namespace AdvancedPS.Core
         /// </summary>
         public static void InitAdvancedPopup<T>(T popup) where T : IAdvancedPopup
         {
-            if (!_popups.Contains(popup))
-                _popups.Add(popup);
+            if (!Popups.Contains(popup))
+                Popups.Add(popup);
         }
         
         /// <summary>
@@ -28,207 +29,350 @@ namespace AdvancedPS.Core
         /// </summary>
         public static IAdvancedPopupDisplay GetDisplay<T>() where T : IAdvancedPopupDisplay, new()
         {
-            IAdvancedPopupDisplay display = _displays.FirstOrDefault(popupDisplay => popupDisplay is T);
+            IAdvancedPopupDisplay display = Displays.FirstOrDefault(popupDisplay => popupDisplay is T);
             if (display == default)
             {
                 display = new T();
-                display.Init();
+                display.InitMethod();
                 
-                _displays.Add(display);
+                Displays.Add(display);
             }
 
             return display;
         }
 
-        /// <summary>
-        /// Show all popup's with layer by CachedDisplay type.
-        /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="deepShow"> true - show all "DeepPopups" with layer </param>
-        /// <param name="deepHide"> true - hide all "DeepPopups" without layer </param>
-
         #region Layer systems
-        public static async void LayerShow(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true)
-        {
-            List<IAdvancedPopup> _popup = _popups.FindAll(popup => popup.PopupLayer.HasFlag(layer));
-            if (_popup.Count <= 0)
-            {
-                Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                return;
-            }
 
-            CancellationToken cToken = UpdateCancellationTokenSource();
-
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                popup.StopAnim();
-                tasks.Add(popup.Hide(deepHide, cancellationToken: cToken));
-            }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
-            
-            tasks.Clear();
-            foreach (IAdvancedPopup popup in _popup)
-            {
-                popup.StopAnim();
-                tasks.Add(popup.Show(deepShow, cancellationToken: cToken));
-            }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
-        }
-        
         /// <summary>
-        /// Show all popup's with layer by IAdvancedPopupDisplay generic T type for all popup's.
+        /// Show all popups with the specified layer.
         /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="deepShow"> true - show all "DeepPopups" with layer </param>
-        /// <param name="deepHide"> true - hide all "DeepPopups" without layer </param>
-        public static async void LayerShow<T>(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true) where T : IAdvancedPopupDisplay, new()
+        /// <param name="layer">The layer to show popups for.</param>
+        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
+        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
+        public static void LayerShow(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true)
         {
-            List<IAdvancedPopup> _popup = _popups.FindAll(popup => popup.PopupLayer.HasFlag(layer));
-            if (_popup.Count <= 0)
-            {
-                Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                return;
-            }
+            _ = LayerShowAsync(layer, deepShow, deepHide);
+        }
 
-            CancellationToken cToken = UpdateCancellationTokenSource();
+        private static async Task LayerShowAsync(PopupLayerEnum layer, bool deepShow, bool deepHide)
+        {
+            try
+            {
+                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
+                if (popupsToShow.Count <= 0)
+                {
+                    Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
+                    return;
+                }
 
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                popup.StopAnim();
-                tasks.Add(popup.Hide<T>(deepHide, cancellationToken: cToken));
+                CancellationToken cToken = UpdateCancellationTokenSource();
+
+                await HidePopupsAsync(layer, deepHide, cToken);
+                if (cToken.IsCancellationRequested || !Application.isPlaying)
+                    return;
+                
+                await ShowPopupsAsync(popupsToShow, deepShow, cToken);
             }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
-            
-            tasks.Clear();
-            foreach (IAdvancedPopup popup in _popup)
+            catch (Exception ex)
             {
-                popup.StopAnim();
-                tasks.Add(popup.Show<T>(deepShow, cancellationToken: cToken));
+                Debug.LogError($"Exception occurred: {ex.Message}");
             }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
         }
 
         /// <summary>
-        /// Show all popup's with layer by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
+        /// Show all popups with the specified layer by CachedDisplay type.
         /// </summary>
-        /// <param name="layer"></param>
-        /// <param name="deepShow"> true - show all "DeepPopups" with layer </param>
-        /// <param name="deepHide"> true - hide all "DeepPopups" without layer </param>
-        public static async void LayerShow<T, J>(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true)
+        /// <param name="layer">The layer to show popups for.</param>
+        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
+        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
+        public static void LayerShow<T>(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true) where T : IAdvancedPopupDisplay, new()
+        {
+            _ = LayerShowAsync<T>(layer, deepShow, deepHide);
+        }
+
+        private static async Task LayerShowAsync<T>(PopupLayerEnum layer, bool deepShow, bool deepHide) where T : IAdvancedPopupDisplay, new()
+        {
+            try
+            {
+                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
+                if (popupsToShow.Count <= 0)
+                {
+                    Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
+                    return;
+                }
+
+                CancellationToken cToken = UpdateCancellationTokenSource();
+
+                await HidePopupsAsync<T>(layer, deepHide, cToken);
+                if (cToken.IsCancellationRequested || !Application.isPlaying)
+                    return;
+                
+                await ShowPopupsAsync<T>(popupsToShow, deepShow, cToken);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Show all popups with the specified layer by IAdvancedPopupDisplay generic T type for all popups.
+        /// </summary>
+        /// <param name="layer">The layer to show popups for.</param>
+        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
+        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
+        public static void LayerShow<T, J>(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true)
             where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
         {
-            List<IAdvancedPopup> _popup = _popups.FindAll(popup => popup.PopupLayer.HasFlag(layer));
-            if (_popup.Count <= 0)
-            {
-                Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                return;
-            }
+            _ = LayerShowAsync<T, J>(layer, deepShow, deepHide);
+        }
 
-            CancellationToken cToken = UpdateCancellationTokenSource();
+        private static async Task LayerShowAsync<T, J>(PopupLayerEnum layer, bool deepShow, bool deepHide)
+            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
+        {
+            try
+            {
+                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
+                if (popupsToShow.Count <= 0)
+                {
+                    Debug.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
+                    return;
+                }
 
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                popup.StopAnim();
-                tasks.Add(popup.Hide<T, J>(deepHide, cancellationToken: cToken));
+                CancellationToken cToken = UpdateCancellationTokenSource();
+
+                await HidePopupsAsync<T, J>(layer, deepHide, cToken);
+                if (cToken.IsCancellationRequested || !Application.isPlaying)
+                    return;
+                
+                await ShowPopupsAsync<T, J>(popupsToShow, deepShow, cToken);
             }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
-            
-            tasks.Clear();
-            foreach (IAdvancedPopup popup in _popup)
+            catch (Exception ex)
             {
-                popup.StopAnim();
-                tasks.Add(popup.Show<T, J>(deepShow, cancellationToken: cToken));
+                Debug.LogError($"Exception occurred: {ex.Message}");
             }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-            
-            if (cToken.IsCancellationRequested)
-                return;
         }
         #endregion
 
         #region HIDE ALL
+
         /// <summary>
-        /// Hide all popup's by CachedDisplay type.
+        /// Hide all popups by CachedDisplay type.
         /// </summary>
-        /// <param name="deepHide"> true - hide all "DeepPopups" without layer </param>
-        public static async void HideAll(bool deepHide = false)
+        /// <param name="deepHide">If true, hides all "DeepPopups" without layer.</param>
+        public static void HideAll(bool deepHide = false)
         {
-            CancellationToken cToken = UpdateCancellationTokenSource();
-            
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups)
-            {
-                popup.StopAnim();
-                tasks.Add(popup.Hide(deepHide, cancellationToken: cToken));
-            }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
+            _ = HideAllAsync(deepHide);
         }
-        
-        /// <summary>
-        /// Hide all popup's by IAdvancedPopupDisplay generic T type for all popup's.
-        /// </summary>
-        /// <param name="deepHide"> true - hide all "DeepPopups" </param>
-        public static async void HideAll<T>(bool deepHide = false) where T : IAdvancedPopupDisplay, new()
+
+        private static async Task HideAllAsync(bool deepHide)
         {
-            CancellationToken cToken = UpdateCancellationTokenSource();
-            
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups)
+            try
             {
-                popup.StopAnim();
-                tasks.Add(popup.Hide<T>(deepHide, cancellationToken: cToken));
+                CancellationToken cToken = UpdateCancellationTokenSource();
+                await HideAllPopupsAsync(deepHide, cToken);
             }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception occurred: {ex.Message}");
+            }
         }
-        
+
         /// <summary>
-        /// Hide all popup's by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
+        /// Hide all popups by IAdvancedPopupDisplay generic T type for all popups.
         /// </summary>
-        /// <param name="deepHide"> true - hide all "DeepPopups" </param>
-        public static async void HideAll<T, J>(bool deepHide = true) where T : IAdvancedPopupDisplay, new()
+        /// <param name="deepHide">If true, hides all "DeepPopups".</param>
+        public static void HideAll<T>(bool deepHide = false) where T : IAdvancedPopupDisplay, new()
+        {
+            _ = HideAllAsync<T>(deepHide);
+        }
+
+        private static async Task HideAllAsync<T>(bool deepHide) where T : IAdvancedPopupDisplay, new()
+        {
+            try
+            {
+                CancellationToken cToken = UpdateCancellationTokenSource();
+                await HideAllPopupsAsync<T>(deepHide, cToken);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception occurred: {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// Hide all popups by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
+        /// </summary>
+        /// <param name="deepHide">If true, hides all "DeepPopups".</param>
+        public static void HideAll<T, J>(bool deepHide = true) where T : IAdvancedPopupDisplay, new()
             where J : IAdvancedPopupDisplay, new()
         {
-            CancellationToken cToken = UpdateCancellationTokenSource();
-            
+            _ = HideAllAsync<T, J>(deepHide);
+        }
+
+        private static async Task HideAllAsync<T, J>(bool deepHide) where T : IAdvancedPopupDisplay, new()
+            where J : IAdvancedPopupDisplay, new()
+        {
+            try
+            {
+                CancellationToken cToken = UpdateCancellationTokenSource();
+                await HideAllPopupsAsync<T, J>(deepHide, cToken);
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Exception occurred: {ex.Message}");
+            }
+        }
+        #endregion
+
+        /// <summary>
+        /// Get popups by layer.
+        /// </summary>
+        private static List<IAdvancedPopup> GetPopupsByLayer(PopupLayerEnum layer)
+        {
+            return Popups.FindAll(popup => popup.PopupLayer.HasFlag(layer));
+        }
+
+        /// <summary>
+        /// Show popups with specified display type.
+        /// </summary>
+        private static async Task ShowPopupsAsync(List<IAdvancedPopup> popups, bool deepShow, CancellationToken cToken)
+        {
             List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in _popups)
+            foreach (IAdvancedPopup popup in popups)
             {
                 popup.StopAnim();
-                tasks.Add(popup.Hide<T, J>(deepHide, cancellationToken: cToken));
+                tasks.Add(popup.ShowAsync(deepShow, cancellationToken: cToken));
             }
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
-        #endregion
-        
+
         /// <summary>
-        /// Stop previous task's and start new.
+        /// Show popups with specified display type.
+        /// </summary>
+        private static async Task ShowPopupsAsync<T>(List<IAdvancedPopup> popups, bool deepShow, CancellationToken cToken) where T : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in popups)
+            {
+                popup.StopAnim();
+                tasks.Add(popup.ShowAsync<T>(deepShow, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Show popups with specified display type.
+        /// </summary>
+        private static async Task ShowPopupsAsync<T, J>(List<IAdvancedPopup> popups, bool deepShow, CancellationToken cToken)
+            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in popups)
+            {
+                popup.StopAnim();
+                tasks.Add(popup.ShowAsync<T, J>(deepShow, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide popups with specified display type.
+        /// </summary>
+        private static async Task HidePopupsAsync(PopupLayerEnum layer, bool deepHide, CancellationToken cToken)
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide popups with specified display type.
+        /// </summary>
+        private static async Task HidePopupsAsync<T>(PopupLayerEnum layer, bool deepHide, CancellationToken cToken) where T : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync<T>(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide popups with specified display type.
+        /// </summary>
+        private static async Task HidePopupsAsync<T, J>(PopupLayerEnum layer, bool deepHide, CancellationToken cToken)
+            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync<T, J>(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide all popups.
+        /// </summary>
+        private static async Task HideAllPopupsAsync(bool deepHide, CancellationToken cToken)
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups)
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide all popups.
+        /// </summary>
+        private static async Task HideAllPopupsAsync<T>(bool deepHide, CancellationToken cToken) where T : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups)
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync<T>(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Hide all popups.
+        /// </summary>
+        private static async Task HideAllPopupsAsync<T, J>(bool deepHide, CancellationToken cToken)
+            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
+        {
+            List<Task> tasks = new List<Task>();
+            foreach (IAdvancedPopup popup in Popups)
+            {
+                popup.StopAnim();
+                tasks.Add(popup.HideAsync<T, J>(deepHide, cancellationToken: cToken));
+            }
+            if (tasks.Count > 0)
+                await Task.WhenAll(tasks);
+        }
+
+        /// <summary>
+        /// Stop previous tasks and start new.
         /// </summary>
         private static CancellationToken UpdateCancellationTokenSource()
         {

@@ -6,8 +6,8 @@ namespace AdvancedPS.Core
 {
     public abstract class IAdvancedPopupDisplay
     {
-        public abstract void Init();
-        public abstract Task Show(Transform transform, CancellationToken cancellationToken = default);
-        public abstract Task Hide(Transform transform, CancellationToken cancellationToken = default);
+        public abstract void InitMethod();
+        public abstract Task ShowMethod(Transform transform, CancellationToken cancellationToken = default);
+        public abstract Task HideMethod(Transform transform, CancellationToken cancellationToken = default);
     }
 }

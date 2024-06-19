@@ -1,14 +1,27 @@
 # Changelog
+## [1.1.0] - 2024-7-19
+### Fixed
+- Working with Treads
+- Depending animations speed from FPS
+- Rare bug with editing popups in scene after stopping play mode in editor
+### Rework
+- Documentation in scripts
+- Popup view in inspector
+- Access to Displays parameters
+### Added
+- Layers Editor
+### Remove
+- Obsolete fields
 
 ## [1.0.5] - 2024-7-19
-### Remove
-- Fix reopening popups
+### Fixed
+- Reopening popups
 
 ## [1.0.4] - 2023-4-21
 ### Remove
 - Show/hide popups by name
 - Old demo's
-- ### Added
+### Added
 - Caching IAdvancedPopupDisplay for popups
 - Show/hide popup without generic methods by cached IAdvancedPopupDisplay type
 ### Rework
