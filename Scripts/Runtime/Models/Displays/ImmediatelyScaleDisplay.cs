@@ -14,7 +14,7 @@ namespace AdvancedPS.Core
             _hideScale = Vector3.zero;
         }
 
-        public override async Task Show(Transform transform, CancellationToken cancellationToken = default)
+        public override Task Show(Transform transform, CancellationToken cancellationToken = default)
         {
             CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
             canvasGroup.alpha = 1;
@@ -22,9 +22,11 @@ namespace AdvancedPS.Core
             canvasGroup.blocksRaycasts = true;
         
             transform.localScale = _showScale;
+
+            return Task.CompletedTask;
         }
 
-        public override async Task Hide(Transform transform, CancellationToken cancellationToken = default)
+        public override Task Hide(Transform transform, CancellationToken cancellationToken = default)
         {
             transform.localScale = _hideScale;
         
@@ -32,6 +34,8 @@ namespace AdvancedPS.Core
             canvasGroup.alpha = 0;
             canvasGroup.interactable = false;
             canvasGroup.blocksRaycasts = false;
+            
+            return Task.CompletedTask;
         }
     }
 }
