@@ -2,10 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using AdvancedPS.Core.Editor.Styles;
+using AdvancedPS.Core.Enum;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdvancedPS.Core.Enum
+namespace AdvancedPS.Core.Editor
 {
     public class PopupLayerEnumEditor : EditorWindow
     {
@@ -13,25 +15,63 @@ namespace AdvancedPS.Core.Enum
         private string _newEnumName = string.Empty;
         private bool[] _enumNameChanged;
         private string enumFilePath;
-
+        private bool autoSave;
+        
+        private const string AutoSaveKey = "AutoSaveEnabled";
+        private const string ImagesPath = "Assets/advanced-popup-system/Scripts/Runtime/Images/";
+        
+        private Texture2D bannerTexture;
+        private Texture2D iconTexture;
+        private Texture2D blackTexture;
+        
         [MenuItem("Tools/Advanced Popup System Layers")]
         public static void ShowWindow()
         {
-            GetWindow<PopupLayerEnumEditor>("Popup Layer Enum Editor");
+            var window = GetWindow<PopupLayerEnumEditor>("Popup Layer Enum Editor");
+            window.titleContent = new GUIContent("Popup Layer Enum Editor");
         }
 
         private void OnEnable()
         {
             enumFilePath = Path.Combine(Application.dataPath, "advanced-popup-system/Scripts/Runtime/Core/PopupLayerEnum.cs");
             LoadEnumNames();
+            autoSave = PlayerPrefs.GetInt(AutoSaveKey, 1) == 1;
+            
+            bannerTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(ImagesPath + "AP_bundleBlack.png");
+            iconTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(ImagesPath + "AP_LogoBlack.png");
+            if (iconTexture != null)
+            {
+                titleContent = new GUIContent("Popup Layer Enum Editor", iconTexture);
+                
+                blackTexture = new Texture2D(1, 1);
+                blackTexture.SetPixel(0, 0, Color.black);
+                blackTexture.Apply();
+            }
+            
+            this.minSize = new Vector2(256, 400);
         }
 
         private void OnGUI()
         {
-            GUILayout.Label("Advanced Popup System Layers", EditorStyles.boldLabel);
-            GUILayout.Space(10);
+            GUI.backgroundColor = Color.black;
+            GUI.contentColor = Color.white;
+            EditorGUI.DrawRect(new Rect(0, 0, position.width, position.height), Color.black);
+            
+            if (bannerTexture != null)
+            {
+                const float bannerWidth = 256;
+                const float bannerHeight = 128;
+                Rect blackBackgroundRect = GUILayoutUtility.GetRect(position.width, bannerHeight);
+                GUI.DrawTexture(blackBackgroundRect, blackTexture);
 
+                Rect bannerRect = new Rect((position.width - bannerWidth) / 2, blackBackgroundRect.y, bannerWidth, bannerHeight);
+                GUI.DrawTexture(bannerRect, bannerTexture);
+
+                GUILayout.Space(blackBackgroundRect.height);
+            }
+            
             // Display current enums
+            GUILayout.Space(10);
             for (int i = 0; i < _enumNames.Length; i++)
             {
                 GUILayout.BeginHorizontal();
@@ -39,7 +79,10 @@ namespace AdvancedPS.Core.Enum
                 if (GUILayout.Button("Delete", GUILayout.Width(60)))
                 {
                     DeleteEnum(i);
-                    SaveEnumChanges();
+                    if (autoSave)
+                        SaveEnumChanges();
+                    
+                    GUILayout.EndHorizontal();
                     return;
                 }
                 GUILayout.EndHorizontal();
@@ -59,12 +102,37 @@ namespace AdvancedPS.Core.Enum
             {
                 AddEnum(_newEnumName);
                 _newEnumName = string.Empty;
-                SaveEnumChanges();
+                if (autoSave)
+                    SaveEnumChanges();
+            }
+            
+            // Auto-save and Save button (fixed at the bottom right)
+            GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+
+            GUILayout.Label("Auto-Save", GUILayout.ExpandWidth(false));
+            bool newAutoSave = GUILayout.Toggle(autoSave, autoSave ? "[x]" : "[ ]", PopupLayerEnumEditorStyles.ToggleStyle);
+            if (newAutoSave != autoSave)
+            {
+                autoSave = newAutoSave;
+                PlayerPrefs.SetInt(AutoSaveKey, autoSave ? 1 : 0); // Save auto-save preference
+                PlayerPrefs.Save();
+                
+                if (autoSave)
+                    SaveEnumChanges();
             }
 
+            GUI.enabled = !autoSave;
+            if (GUILayout.Button("Save", GUILayout.Width(80)))
+            {
+                SaveEnumChanges();
+            }
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+            
             // Save changes
-            GUILayout.Space(20);
-            if (_enumNameChanged != null && _enumNameChanged.Any(changed => changed))
+            if (_enumNameChanged != null && _enumNameChanged.Any(changed => changed) && autoSave)
             {
                 SaveEnumChanges();
                 Array.Clear(_enumNameChanged, 0, _enumNameChanged.Length);
@@ -83,7 +151,7 @@ namespace AdvancedPS.Core.Enum
             {
                 Array.Resize(ref _enumNames, _enumNames.Length + 1);
                 _enumNames[_enumNames.Length - 1] = enumName;
-                Array.Resize(ref _enumNameChanged, _enumNames.Length); // Убедиться, что размер массива изменен
+                Array.Resize(ref _enumNameChanged, _enumNames.Length);
             }
         }
 
