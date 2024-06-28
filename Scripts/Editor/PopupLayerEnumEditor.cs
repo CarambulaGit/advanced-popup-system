@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using AdvancedPS.Core.Editor.Styles;
 using AdvancedPS.Core.Enum;
 using UnityEditor;
@@ -72,10 +73,26 @@ namespace AdvancedPS.Core.Editor
             
             // Display current enums
             GUILayout.Space(10);
+            
+            Array.Resize(ref _enumNameChanged, _enumNames.Length);
             for (int i = 0; i < _enumNames.Length; i++)
             {
                 GUILayout.BeginHorizontal();
-                _enumNames[i] = GUILayout.TextField(_enumNames[i]);
+                string newEnumName = EditorGUILayout.DelayedTextField(_enumNames[i]);
+                if (newEnumName != _enumNames[i])
+                {
+                    newEnumName = ValidateAndFormatEnumName(newEnumName);
+                    if (!string.IsNullOrEmpty(newEnumName))
+                    {
+                        _enumNames[i] = newEnumName;
+                        _enumNameChanged[i] = true;
+                    }
+                    else
+                    {
+                        Debug.LogError("Invalid enum name.");
+                    }
+                }
+                
                 if (GUILayout.Button("Delete", GUILayout.Width(60)))
                 {
                     DeleteEnum(i);
@@ -86,12 +103,6 @@ namespace AdvancedPS.Core.Editor
                     return;
                 }
                 GUILayout.EndHorizontal();
-
-                if (i >= _enumNameChanged.Length)
-                {
-                    Array.Resize(ref _enumNameChanged, _enumNames.Length);
-                }
-                _enumNameChanged[i] = GUI.changed;
             }
 
             // Add new enum
@@ -100,10 +111,18 @@ namespace AdvancedPS.Core.Editor
             _newEnumName = GUILayout.TextField(_newEnumName);
             if (GUILayout.Button("Add"))
             {
-                AddEnum(_newEnumName);
-                _newEnumName = string.Empty;
-                if (autoSave)
-                    SaveEnumChanges();
+                _newEnumName = ValidateAndFormatEnumName(_newEnumName);
+                if (!string.IsNullOrEmpty(_newEnumName))
+                {
+                    AddEnum(_newEnumName);
+                    _newEnumName = string.Empty;
+                    if (autoSave)
+                        SaveEnumChanges();
+                }
+                else
+                {
+                    Debug.LogError("Invalid enum name.");
+                }
             }
             
             // Auto-save and Save button (fixed at the bottom right)
@@ -159,6 +178,18 @@ namespace AdvancedPS.Core.Editor
         {
             _enumNames = _enumNames.Where((_, i) => i != index).ToArray();
             _enumNameChanged = _enumNameChanged.Where((_, i) => i != index).ToArray();
+        }
+        
+        private static string ValidateAndFormatEnumName(string enumName)
+        {
+            if (string.IsNullOrEmpty(enumName))
+                return string.Empty;
+
+            enumName = Regex.Replace(enumName, @"\s+", "_");
+            enumName = Regex.Replace(enumName, "_+", "_");
+            enumName = enumName.ToUpper();
+            
+            return !Regex.IsMatch(enumName, @"^[A-Z0-9_]+$") ? string.Empty : enumName;
         }
 
         private void SaveEnumChanges()
