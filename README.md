@@ -1,5 +1,5 @@
 # Advanced Popup System
-![AP_bundleBlack](https://github.com/Dest-69/advanced-popup-system/assets/41786105/d6c26947-c49a-4984-9d84-3b586e32ac50)
+![AP_bundleBlackLong](https://github.com/Dest-69/advanced-popup-system/assets/41786105/fd1cc56f-fca8-427a-af25-2267462d223e)
 
 Advanced Popup System - is a free flexible popup system. You can add and change functionality depending on your needs.
 
