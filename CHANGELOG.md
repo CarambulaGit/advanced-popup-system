@@ -1,4 +1,22 @@
 # Changelog
+## [1.2.1] - 2024-7-28
+### Fixed
+- Animations lineary
+- Incorrect events behavior
+### Rework
+- Popup Layer Editor
+- Settings for animations (duration for ex.)
+### Added
+- Bunner in AP Layer Editor
+- Incorrect enum names validator
+- Icon for Popups in inspector & hierarchy
+- Manual control of popups (PopupShow/PopupHide)
+- Auto-save checkbox & Save button in AP Layer Editor
+### Remove
+- Obsolete initialization for displays
+### Updated
+- Documentation in code (tips)
+
 ## [1.1.0] - 2024-7-19
 ### Fixed
 - Working with Treads
