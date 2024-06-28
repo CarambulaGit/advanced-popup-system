@@ -6,62 +6,55 @@ namespace AdvancedPS.Core
 {
     public class SmoothScaleDisplay : IAdvancedPopupDisplay
     {
-        protected Vector3 ShowScale;
-        protected Vector3 HideScale;
-        protected float AnimationSpeed;
-    
-        public override void InitMethod()
+        protected Vector3 ShowScale = Vector3.one;
+        protected Vector3 HideScale = Vector3.zero;
+
+        public override async Task ShowMethod(Transform transform, DisplaySettings settings, CancellationToken cancellationToken = default)
         {
-            AnimationSpeed = 1f; // Speed of zooming per second
-            ShowScale = Vector3.one;
-            HideScale = Vector3.zero;
-        }
+            CanvasGroup canvasGroup = GetCanvasGroup(transform);
+            if (canvasGroup == null)
+                return;
+            
+            SetCanvasGroupState(canvasGroup, true);
 
-        public override async Task ShowMethod(Transform transform, CancellationToken cancellationToken = default)
-        {
-            SetCanvasGroupState(transform, true);
+            Vector3 initialScale = transform.localScale;
+            float elapsedTime = 0;
 
-            // Initialize progress tracking variables
-            float progress = 0;
-            float targetProgress = Vector3.Distance(ShowScale, transform.localScale);
-
-            // Animate scaling up to the show scale
-            while (progress < targetProgress)
+            while (elapsedTime < settings.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                // Calculate step for each frame
-                Vector3 step = (ShowScale - transform.localScale) * AnimationSpeed * Time.deltaTime;
-                transform.localScale += step;
-                progress += Vector3.Distance(step, Vector3.zero);
+                float t = elapsedTime / settings.Duration;
+                transform.localScale = Vector3.Lerp(initialScale, ShowScale, t);
 
-                // Yield to the next frame
+                elapsedTime += Time.deltaTime;
                 await Task.Yield();
             }
 
             // Ensure the final scale is set correctly
             transform.localScale = ShowScale;
+            settings.OnComplete?.Invoke();
         }
 
-        public override async Task HideMethod(Transform transform, CancellationToken cancellationToken = default)
+        public override async Task HideMethod(Transform transform, DisplaySettings settings, CancellationToken cancellationToken = default)
         {
-            // Initialize progress tracking variables
-            float progress = 0;
-            float targetProgress = Vector3.Distance(HideScale, transform.localScale);
+            CanvasGroup canvasGroup = GetCanvasGroup(transform);
+            if (canvasGroup == null)
+                return;
+            
+            Vector3 initialScale = transform.localScale;
+            float elapsedTime = 0;
 
-            // Animate scaling down to the hide scale
-            while (progress < targetProgress)
+            while (elapsedTime < settings.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                // Calculate step for each frame
-                Vector3 step = (HideScale - transform.localScale) * AnimationSpeed * Time.deltaTime;
-                transform.localScale += step;
-                progress += Vector3.Distance(step, Vector3.zero);
+                float t = elapsedTime / settings.Duration;
+                transform.localScale = Vector3.Lerp(initialScale, HideScale, t);
 
-                // Yield to the next frame
+                elapsedTime += Time.deltaTime;
                 await Task.Yield();
             }
 
@@ -69,19 +62,32 @@ namespace AdvancedPS.Core
             transform.localScale = HideScale;
 
             // Set CanvasGroup state to hidden
-            SetCanvasGroupState(transform, false);
+            SetCanvasGroupState(canvasGroup, false);
+            settings.OnComplete?.Invoke();
+        }
+        
+        /// <summary>
+        /// Get the CanvasGroup component from the transform.
+        /// </summary>
+        /// <param name="transform">The transform of the popup.</param>
+        /// <returns>The CanvasGroup component if it exists, null otherwise.</returns>
+        private static CanvasGroup GetCanvasGroup(Transform transform)
+        {
+            CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {
+                Debug.LogWarning($"CanvasGroup component missing on {transform.name}");
+            }
+            return canvasGroup;
         }
 
         /// <summary>
         /// Set the state of the CanvasGroup.
         /// </summary>
-        /// <param name="transform">The transform of the popup.</param>
+        /// <param name="canvasGroup">The CanvasGroup component of the popup.</param>
         /// <param name="state">The desired state (true for visible, false for hidden).</param>
-        private static void SetCanvasGroupState(Transform transform, bool state)
+        private static void SetCanvasGroupState(CanvasGroup canvasGroup, bool state)
         {
-            CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
-            if (canvasGroup == null) return;
-            
             canvasGroup.alpha = state ? 1 : 0;
             canvasGroup.interactable = state;
             canvasGroup.blocksRaycasts = state;

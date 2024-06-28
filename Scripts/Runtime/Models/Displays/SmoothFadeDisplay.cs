@@ -6,75 +6,59 @@ namespace AdvancedPS.Core
 {
     public class SmoothFadeDisplay : IAdvancedPopupDisplay
     {
-        protected float MaxValue;
-        protected float MinValue;
-        protected float AnimationSpeed;
+        protected float MaxValue = 1f;
+        protected float MinValue = 0f;
     
-        public override void InitMethod()
-        {
-            MaxValue = 1f;
-            MinValue = 0f;
-            AnimationSpeed = 1f; // Speed changing of alpha per second
-        }
-    
-        public override async Task ShowMethod(Transform transform, CancellationToken cancellationToken = default)
+        public override async Task ShowMethod(Transform transform, DisplaySettings settings, CancellationToken cancellationToken = default)
         {
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
             if (canvasGroup == null)
                 return;
 
-            // Initialize progress tracking variables
-            float progress = canvasGroup.alpha;
-            float targetProgress = MaxValue;
+            float initialAlpha = canvasGroup.alpha;
+            float elapsedTime = 0;
 
-            // Animate fading in
-            while (progress < targetProgress)
+            while (elapsedTime < settings.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                // Calculate step for each frame
-                float step = AnimationSpeed * Time.deltaTime;
-                canvasGroup.alpha = Mathf.Min(canvasGroup.alpha + step, MaxValue);
-                progress = canvasGroup.alpha;
+                float t = elapsedTime / settings.Duration;
+                canvasGroup.alpha = Mathf.Lerp(initialAlpha, MaxValue, t);
 
-                // Yield to the next frame
+                elapsedTime += Time.deltaTime;
                 await Task.Yield();
-            }
+            }   
 
             // Ensure the final alpha is set correctly
-            canvasGroup.alpha = MaxValue;
             SetCanvasGroupState(canvasGroup, true);
+            settings.OnComplete?.Invoke();
         }
 
-        public override async Task HideMethod(Transform transform, CancellationToken cancellationToken = default)
+        public override async Task HideMethod(Transform transform, DisplaySettings settings, CancellationToken cancellationToken = default)
         {
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
             if (canvasGroup == null)
                 return;
 
-            // Initialize progress tracking variables
-            float progress = canvasGroup.alpha;
-            float targetProgress = MinValue;
+            float initialAlpha = canvasGroup.alpha;
+            float elapsedTime = 0;
 
-            // Animate fading out
-            while (progress > targetProgress)
+            while (elapsedTime < settings.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                // Calculate step for each frame
-                float step = AnimationSpeed * Time.deltaTime;
-                canvasGroup.alpha = Mathf.Max(canvasGroup.alpha - step, MinValue);
-                progress = canvasGroup.alpha;
+                float t = elapsedTime / settings.Duration;
+                canvasGroup.alpha = Mathf.Lerp(initialAlpha, MinValue, t);
 
-                // Yield to the next frame
+                elapsedTime += Time.deltaTime;
                 await Task.Yield();
             }
 
             // Ensure the final alpha is set correctly
-            canvasGroup.alpha = MinValue;
             SetCanvasGroupState(canvasGroup, false);
+            settings.OnComplete?.Invoke();
         }
 
         /// <summary>
@@ -97,8 +81,9 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="canvasGroup">The CanvasGroup component of the popup.</param>
         /// <param name="state">The desired state (true for visible, false for hidden).</param>
-        private static void SetCanvasGroupState(CanvasGroup canvasGroup, bool state)
+        private void SetCanvasGroupState(CanvasGroup canvasGroup, bool state)
         {
+            canvasGroup.alpha = state ? MaxValue : MinValue;
             canvasGroup.interactable = state;
             canvasGroup.blocksRaycasts = state;
         }
