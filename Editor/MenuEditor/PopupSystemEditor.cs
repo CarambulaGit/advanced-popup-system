@@ -10,7 +10,6 @@ namespace AdvancedPS.Editor
         private enum Tab
         {
             Layers,
-            Popups,
             Settings
         }
         private string imagesPath;
@@ -44,7 +43,6 @@ namespace AdvancedPS.Editor
             
             // Initialize and load necessary resources
             PopupLayerEditorPanel.Initialize();
-            PopupPanelEditor.Initialize();
             PopupSettingsEditor.Initialize();
         }
 
@@ -76,9 +74,6 @@ namespace AdvancedPS.Editor
                 case Tab.Layers:
                     PopupLayerEditorPanel.OnGUI();
                     break;
-                case Tab.Popups:
-                    PopupPanelEditor.OnGUI();
-                    break;
                 case Tab.Settings:
                     PopupSettingsEditor.OnGUI();
                     break;
@@ -91,10 +86,6 @@ namespace AdvancedPS.Editor
             if (GUILayout.Button("Layers", currentTab == Tab.Layers ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
             {
                 currentTab = Tab.Layers;
-            }
-            if (GUILayout.Button("Popups", currentTab == Tab.Popups ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
-            {
-                currentTab = Tab.Popups;
             }
             if (GUILayout.Button("Settings", currentTab == Tab.Settings ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
             {

@@ -8,6 +8,7 @@ namespace AdvancedPS.Editor.Styles
         public static readonly GUIStyle SelectedTabStyle;
         public static readonly GUIStyle NormalTabStyle;
         public static readonly GUIStyle ScrollViewStyle;
+        public static readonly GUIStyle BoldButtonStyle;
         
         static PopupSystemEditorStyles()
         {
@@ -32,6 +33,11 @@ namespace AdvancedPS.Editor.Styles
                 focused = { background = selectedTexture, textColor = Color.white },
                 active = { background = selectedTexture, textColor = Color.white },
                 hover = { background = selectedTexture, textColor = Color.white },
+            };
+            
+            BoldButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                fontStyle = FontStyle.Bold
             };
 
             NormalTabStyle = new GUIStyle(GUI.skin.button)
