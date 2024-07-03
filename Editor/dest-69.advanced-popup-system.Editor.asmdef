@@ -1,0 +1,18 @@
+{
+    "name": "dest-69.advanced-popup-system.editor",
+    "rootNamespace": "AdvancedPS.Editor",
+    "references": [
+        "GUID:bcd6335d616709349968d9fbde39ead7"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

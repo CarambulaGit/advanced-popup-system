@@ -2,7 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     public interface IAdvancedPopupDisplay
     {

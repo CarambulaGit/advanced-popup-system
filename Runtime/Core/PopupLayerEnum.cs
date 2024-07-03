@@ -1,6 +1,8 @@
-namespace AdvancedPS.Core.Enum
+using System;
+
+namespace AdvancedPS.Core
 {
-    [System.Flags]
+    [Flags]
     public enum PopupLayerEnum
     {
         LOGIN = 1 << 0,

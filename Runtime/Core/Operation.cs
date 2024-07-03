@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     public class Operation
     {

@@ -1,9 +1,9 @@
-using AdvancedPS.Core.Editor.Styles;
 using AdvancedPS.Core.Utils;
+using AdvancedPS.Editor.Styles;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdvancedPS.Core.Editor
+namespace AdvancedPS.Editor
 {
     public class PopupSystemEditor : EditorWindow
     {

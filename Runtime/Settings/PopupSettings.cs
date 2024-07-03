@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     [Serializable]
     public class PopupSettings

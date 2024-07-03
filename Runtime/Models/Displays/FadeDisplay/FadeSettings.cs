@@ -1,4 +1,6 @@
-﻿namespace AdvancedPS.Core
+﻿using AdvancedPS.Core.System;
+
+namespace AdvancedPS.Core
 {
     public class FadeSettings : IDefaultSettings
     {

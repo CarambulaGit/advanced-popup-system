@@ -1,8 +1,9 @@
+using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdvancedPS.Core.Editor
+namespace AdvancedPS.Editor
 {
     [CustomEditor(typeof(IAdvancedPopup), true)]
     public class IAdvancedPopupEditor : UnityEditor.Editor

@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using AdvancedPS.Core.Enum;
 using UnityEngine;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     public abstract class IAdvancedPopup : MonoBehaviour
     {

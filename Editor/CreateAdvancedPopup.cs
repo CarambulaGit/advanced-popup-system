@@ -1,9 +1,9 @@
-using AdvancedPS.Core.Popup;
+using AdvancedPS.Core;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AdvancedPS.Core.Editor
+namespace AdvancedPS.Editor
 {
     public static class CreateAdvancedPopup
     {

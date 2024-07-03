@@ -3,13 +3,13 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using AdvancedPS.Core.Editor.Styles;
-using AdvancedPS.Core.Enum;
+using AdvancedPS.Core;
 using AdvancedPS.Core.Utils;
+using AdvancedPS.Editor.Styles;
 using UnityEditor;
 using UnityEngine;
 
-namespace AdvancedPS.Core.Editor
+namespace AdvancedPS.Editor
 {
     public class PopupLayerEditorPanel
     {

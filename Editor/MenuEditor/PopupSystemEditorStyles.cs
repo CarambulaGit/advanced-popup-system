@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace AdvancedPS.Core.Editor.Styles
+namespace AdvancedPS.Editor.Styles
 {
     public static class PopupSystemEditorStyles
     {

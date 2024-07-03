@@ -2,10 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using AdvancedPS.Core.System;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace AdvancedPS.Core.Popup
+namespace AdvancedPS.Core
 {
     [RequireComponent(typeof(CanvasGroup))]
     public class AdvancedPopup : IAdvancedPopup

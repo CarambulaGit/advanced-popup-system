@@ -1,7 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
+using AdvancedPS.Core.System;
 
-namespace AdvancedPS.Core.Popup
+namespace AdvancedPS.Core
 {
     public class AdvancedPopupInstantiate : IAdvancedPopup
     {

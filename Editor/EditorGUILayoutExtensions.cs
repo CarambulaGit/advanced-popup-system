@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
     
-namespace AdvancedPS.Core.Editor
+namespace AdvancedPS.Editor
 {
     public static class EditorGUILayoutExtensions
     {

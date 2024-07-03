@@ -1,6 +1,6 @@
 using System;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     public abstract class IDefaultSettings
     {

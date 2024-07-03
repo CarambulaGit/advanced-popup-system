@@ -2,7 +2,7 @@
 using AdvancedPS.Core.Utils;
 using Newtonsoft.Json;
 
-namespace AdvancedPS.Core
+namespace AdvancedPS.Core.System
 {
     public class SettingsManager
     {
