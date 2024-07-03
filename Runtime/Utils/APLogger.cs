@@ -1,28 +1,20 @@
-﻿using System;
-using System.IO;
-using AdvancedPS.Core.System;
-using Newtonsoft.Json;
+﻿using AdvancedPS.Core.System;
 using UnityEngine;
 
 namespace AdvancedPS.Core.Utils
 {
     public class APLogger
     {
-        private static PopupSettings _settings;
+        private static readonly PopupSettings Settings;
 
         static APLogger()
         {
-            LoadSettings();
-        }
-        
-        public static void RefreshSettings()
-        {
-            _settings = SettingsManager.Settings;
+            Settings = SettingsManager.Settings;
         }
         
         public static void Log(string message)
         {
-            if (_settings.LogType is "Log" or "Warning" or "Error")
+            if (Settings.LogType is "Log" or "Warning" or "Error")
             {
                 Debug.Log(message);
             }
@@ -30,7 +22,7 @@ namespace AdvancedPS.Core.Utils
 
         public static void LogWarning(string message)
         {
-            if (_settings.LogType is "Warning" or "Error")
+            if (Settings.LogType is "Warning" or "Error")
             {
                 Debug.LogWarning(message);
             }
@@ -38,39 +30,9 @@ namespace AdvancedPS.Core.Utils
 
         public static void LogError(string message)
         {
-            if (_settings.LogType == "Error")
+            if (Settings.LogType == "Error")
             {
                 Debug.LogError(message);
-            }
-        }
-
-        private static void LoadSettings()
-        {
-            try
-            {
-                string path = FileSearcher.SettingsFilePath;
-                if (File.Exists(path))
-                {
-                    string json = File.ReadAllText(path);
-                    _settings = JsonConvert.DeserializeObject<PopupSettings>(json);
-                }
-                else
-                {
-                    _settings = new PopupSettings
-                    {
-                        CustomIconsEnabled = true,
-                        LogType = "Error"
-                    };
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.LogError("Failed to load settings: " + ex.Message);
-                _settings = new PopupSettings
-                {
-                    CustomIconsEnabled = true,
-                    LogType = "Error"
-                };
             }
         }
     }

@@ -15,11 +15,8 @@ namespace AdvancedPS.Core.System
             LoadSettings();
         }
 
-        public static void SaveSettings(PopupSettings settings = null)
+        public static void SaveSettings()
         {
-            if (settings != null)
-                Settings = settings;
-            
             File.WriteAllText(SettingsFilePath, JsonConvert.SerializeObject(Settings));
 #if UNITY_EDITOR
             UnityEditor.AssetDatabase.Refresh();

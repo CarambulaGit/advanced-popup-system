@@ -1,5 +1,4 @@
 using System;
-
 namespace AdvancedPS.Core
 {
     [Flags]

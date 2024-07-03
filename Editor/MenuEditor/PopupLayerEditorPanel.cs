@@ -124,7 +124,7 @@ namespace AdvancedPS.Editor
 
         private static void LoadEnumNames()
         {
-            _enumNames = System.Enum.GetNames(typeof(PopupLayerEnum));
+            _enumNames = Enum.GetNames(typeof(PopupLayerEnum));
             _enumNameChanged = new bool[_enumNames.Length];
         }
 
@@ -166,9 +166,10 @@ namespace AdvancedPS.Editor
 
             StringBuilder enumFileContent = new StringBuilder();
 
-            enumFileContent.AppendLine("namespace AdvancedPS.Core.Enum");
+            enumFileContent.AppendLine("using System;");
+            enumFileContent.AppendLine("namespace AdvancedPS.Core");
             enumFileContent.AppendLine("{");
-            enumFileContent.AppendLine("    [System.Flags]");
+            enumFileContent.AppendLine("    [Flags]");
             enumFileContent.AppendLine("    public enum PopupLayerEnum");
             enumFileContent.AppendLine("    {");
 

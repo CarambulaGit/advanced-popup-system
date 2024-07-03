@@ -8,11 +8,18 @@ namespace AdvancedPS.Editor
     [CustomEditor(typeof(IAdvancedPopup), true)]
     public class IAdvancedPopupEditor : UnityEditor.Editor
     {
+        private PopupSettings Settings;
+        
         private static string imagesPath;
         private static Texture2D popupIcon;
         
         private void OnEnable()
         {
+            if (Settings == null)
+            {
+                Settings = SettingsManager.Settings;
+            }
+            
             if (popupIcon == null)
             {
                 imagesPath = FileSearcher.ImagesFolderPath;
@@ -22,10 +29,11 @@ namespace AdvancedPS.Editor
         
         public override void OnInspectorGUI()
         {
-            OnHeaderGUI();
+            if (Settings.CustomIconsEnabled)
+                OnHeaderGUI();
             
             serializedObject.Update();
-
+            
             EditorGUILayout.BeginHorizontal();
             SerializedProperty popupLayerProperty = serializedObject.FindProperty("PopupLayer");
             EditorGUILayout.PropertyField(popupLayerProperty, new GUIContent("Popup Layer"));

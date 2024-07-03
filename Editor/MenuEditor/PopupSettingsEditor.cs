@@ -1,7 +1,7 @@
 ﻿using System;
 using AdvancedPS.Core.System;
-using AdvancedPS.Editor.Styles;
 using AdvancedPS.Core.Utils;
+using AdvancedPS.Editor.Styles;
 using UnityEditor;
 using UnityEngine;
 
@@ -9,6 +9,8 @@ namespace AdvancedPS.Editor
 {
     public static class PopupSettingsEditor
     {
+        private static PopupSettings Settings;
+        
         private static bool customIconsEnabled;
         private static int logTypeIndex;
         private static readonly string[] logTypes = { "Error", "Warning", "Info" };
@@ -43,21 +45,18 @@ namespace AdvancedPS.Editor
 
         private static void SaveSettings()
         {
-            SettingsManager.SaveSettings(new PopupSettings
-            {
-                CustomIconsEnabled = customIconsEnabled,
-                LogType = logTypes[logTypeIndex]
-            });
+            Settings.CustomIconsEnabled = customIconsEnabled;
+            Settings.LogType = logTypes[logTypeIndex];
             
-            APLogger.RefreshSettings();
+            SettingsManager.SaveSettings();
         }
 
         private static void LoadSettings()
         {
-            var settings = SettingsManager.LoadSettings();
+            Settings = SettingsManager.LoadSettings();
             
-            customIconsEnabled = settings.CustomIconsEnabled;
-            logTypeIndex = Array.IndexOf(logTypes, settings.LogType);
+            customIconsEnabled = Settings.CustomIconsEnabled;
+            logTypeIndex = Array.IndexOf(logTypes, Settings.LogType);
         }
     }
 }
