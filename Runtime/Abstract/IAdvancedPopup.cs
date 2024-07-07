@@ -29,6 +29,7 @@ namespace AdvancedPS.Core.System
         /// Child or dependent popups of the current one, use if you need more control via Show/Hide.
         /// </summary>
         [Tooltip("Child or dependent popups of the current one, use if you need more control via Show/Hide.")]
+        [Space]
         public List<IAdvancedPopup> DeepPopups;
         /// <summary>
         /// Cached method for the animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
@@ -56,7 +57,7 @@ namespace AdvancedPS.Core.System
         /// </summary>
         /// <typeparam name="T">The type of advanced popup display to create and cache.</typeparam>
         /// <param name="settings">The settings for the animation. If not provided, the default settings will be used.</param>
-        protected void SetCachedDisplay<T>(IDefaultSettings settings) where T : IAdvancedPopupDisplay, new()
+        public void SetCachedDisplay<T>(IDefaultSettings settings) where T : IAdvancedPopupDisplay, new()
         {
             CachedDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedSettings = settings;
@@ -67,10 +68,12 @@ namespace AdvancedPS.Core.System
         /// </summary>
         public virtual void Init()
         {
-            AdvancedPopupSystem.InitAdvancedPopup(this);
-
             if (RootTransform == null)
                 RootTransform = GetComponent<RectTransform>();
+            
+            transform.localScale = Vector3.zero;
+            
+            AdvancedPopupSystem.InitAdvancedPopup(this);
         }
 
         /// <summary>

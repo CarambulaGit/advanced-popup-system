@@ -24,9 +24,10 @@ namespace AdvancedPS.Core
             }
             
             SetCanvasGroupState(canvasGroup, true);
+            transform.localScale = Vector3.one;
 
             Vector3 startPos = GetStartPosition(transform, settingsLocal);
-            Vector3 targetPos = settingsLocal.TargetPosition == Vector3.zero ? GetCanvasCenter(transform) : settingsLocal.TargetPosition;
+            Vector3 targetPos = settingsLocal.TargetPosition;
 
             float elapsedTime = 0;
 
@@ -36,7 +37,9 @@ namespace AdvancedPS.Core
                     return;
 
                 float t = elapsedTime / settings.Duration;
-                transform.localPosition = Vector3.Lerp(startPos, targetPos, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                
+                transform.localPosition = Vector3.LerpUnclamped(startPos, targetPos, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();
@@ -63,7 +66,7 @@ namespace AdvancedPS.Core
             }
             
             Vector3 startPos = transform.localPosition;
-            Vector3 endPos = GetStartPosition(transform, settingsLocal);
+            Vector3 targetPos = GetStartPosition(transform, settingsLocal);
 
             float elapsedTime = 0;
 
@@ -73,17 +76,19 @@ namespace AdvancedPS.Core
                     return;
 
                 float t = elapsedTime / settings.Duration;
-                transform.localPosition = Vector3.Lerp(startPos, endPos, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                transform.localPosition = Vector3.LerpUnclamped(startPos, targetPos, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();
             }
 
             // Ensure the final position is set correctly
-            transform.localPosition = endPos;
+            transform.localPosition = targetPos;
 
             // Set CanvasGroup state to hidden
             SetCanvasGroupState(canvasGroup, false);
+            transform.localScale = Vector3.zero;
             settings.OnAnimationEnd?.Invoke();
         }
         
@@ -116,27 +121,33 @@ namespace AdvancedPS.Core
         
         private static Vector3 GetStartPosition(RectTransform transform, SlideSettings settings)
         {
+            Canvas canvas = transform.GetComponentInParent<Canvas>();
+            if (canvas == null)
+            {
+                Debug.LogError($"SlideDisplay not found Canvas in parent of {transform.name} popup");
+                return Vector3.zero;
+            }
+            if (canvas.renderMode == RenderMode.WorldSpace)
+            {
+                Debug.LogError("SlideDisplay is not working with Canvas RenderMode.WorldSpace");
+                return Vector3.zero;
+            }
+            
             Rect rect = transform.rect;
+            Rect canvasRect = canvas.GetComponent<RectTransform>().rect;
+            Vector2 size = new Vector2(rect.width / 2f + canvasRect.width / 2f, rect.height / 2f + canvasRect.height / 2f);
+
+            var localPosition = transform.localPosition;
             Vector3 startPos = settings.SlideEnum switch
             {
-                SlideEnum.Up => new Vector3(0, rect.height, 0),
-                SlideEnum.Down => new Vector3(0, -rect.height, 0),
-                SlideEnum.Left => new Vector3(-rect.width, 0, 0),
-                SlideEnum.Right => new Vector3(rect.width, 0, 0),
+                SlideEnum.Up => new Vector3(localPosition.x, size.y, localPosition.z),
+                SlideEnum.Down => new Vector3(localPosition.x, -size.y, localPosition.z),
+                SlideEnum.Left => new Vector3(-size.x, localPosition.y, localPosition.z),
+                SlideEnum.Right => new Vector3(size.x, localPosition.y, localPosition.z),
                 _ => Vector3.zero,
             };
-            return startPos;
-        }
-
-        private static Vector3 GetCanvasCenter(RectTransform transform)
-        {
-            Canvas canvas = transform.GetComponentInParent<Canvas>();
-            if (canvas == null || canvas.renderMode == RenderMode.WorldSpace) 
-                return Vector3.zero;
             
-            RectTransform canvasRectTransform = canvas.GetComponent<RectTransform>();
-            var rect = canvasRectTransform.rect;
-            return new Vector3(rect.width / 2, rect.height / 2, 0);
+            return startPos;
         }
     }
 }

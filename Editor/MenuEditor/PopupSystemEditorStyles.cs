@@ -9,6 +9,7 @@ namespace AdvancedPS.Editor.Styles
         public static readonly GUIStyle NormalTabStyle;
         public static readonly GUIStyle ScrollViewStyle;
         public static readonly GUIStyle BoldButtonStyle;
+        public static readonly GUIStyle backgroundStyle;
         
         static PopupSystemEditorStyles()
         {
@@ -25,6 +26,19 @@ namespace AdvancedPS.Editor.Styles
             normalTexture.SetPixel(0, 0, Color.gray);
             normalTexture.Apply();
             
+            Texture2D backgroundTexture = new Texture2D(1, 1);
+            backgroundTexture.SetPixel(0, 0, new Color(0.19f, 0.19f, 0.19f, 1f));
+            backgroundTexture.Apply();
+            
+            backgroundStyle = new GUIStyle
+            {
+                normal =
+                {
+                    background = backgroundTexture
+                },
+                padding = new RectOffset(10, 10, 10, 10)
+            };
+
             SelectedTabStyle = new GUIStyle(GUI.skin.button)
             {
                 fontStyle = FontStyle.Bold,

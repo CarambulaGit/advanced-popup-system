@@ -57,18 +57,20 @@ namespace AdvancedPS.Core
         /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
         public static Operation PopupShow(PopupLayerEnum layer, bool deepShow = false)
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                if (popupsToShow.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToShow.ForEach(popup => popup.ShowAsync(token, null, deepShow));
-                return Task.CompletedTask;
-            });
+                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null, deepShow);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
 
         /// <summary>
@@ -79,18 +81,20 @@ namespace AdvancedPS.Core
         /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
         public static Operation PopupShow<T>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepShow = false) where T : IAdvancedPopupDisplay, new()
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                if (popupsToShow.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToShow.ForEach(popup => popup.ShowAsync<T>(token, settings, deepShow));
-                return Task.CompletedTask;
-            });
+                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepShow);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
 
         /// <summary>
@@ -102,18 +106,20 @@ namespace AdvancedPS.Core
         public static Operation PopupShow<T, J>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepShow = false)
             where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                if (popupsToShow.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToShow.ForEach(popup => popup.ShowAsync<T, J>(token, settings, deepShow));
-                return Task.CompletedTask;
-            });
+                    await ShowPopupsAsync<T,J>(token, GetPopupsByLayer(layer), settings, deepShow);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
         #endregion
         
@@ -125,18 +131,20 @@ namespace AdvancedPS.Core
         /// <param name="deepHide">If true, shows all "DeepPopups" with the specified layer.</param>
         public static Operation PopupHide(PopupLayerEnum layer, bool deepHide = false)
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToHide = GetPopupsByLayer(layer);
-                if (popupsToHide.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToHide.ForEach(popup => popup.HideAsync(token, null, deepHide));
-                return Task.CompletedTask;
-            });
+                    await HidePopupsAsync(token, GetPopupsByLayer(layer), null, deepHide);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
 
         /// <summary>
@@ -147,18 +155,20 @@ namespace AdvancedPS.Core
         /// <param name="deepHide">If true, shows all "DeepPopups" with the specified layer.</param>
         public static Operation PopupHide<T>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepHide = false) where T : IAdvancedPopupDisplay, new()
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToHide = GetPopupsByLayer(layer);
-                if (popupsToHide.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToHide.ForEach(popup => popup.HideAsync<T>(token, settings, deepHide));
-                return Task.CompletedTask;
-            });
+                    await HidePopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepHide);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
 
         /// <summary>
@@ -170,18 +180,20 @@ namespace AdvancedPS.Core
         public static Operation PopupHide<T, J>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepHide = false)
             where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
         {
-            return new Operation(token =>
+            return new Operation(async token =>
             {
-                List<IAdvancedPopup> popupsToHide = GetPopupsByLayer(layer);
-                if (popupsToHide.Count <= 0)
+                try
                 {
-                    APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                    return Task.CompletedTask;
-                }
+                    if (token.IsCancellationRequested || !Application.isPlaying)
+                        return;
 
-                popupsToHide.ForEach(popup => popup.HideAsync<T, J>(token, settings, deepHide));
-                return Task.CompletedTask;
-            });
+                    await HidePopupsAsync<T,J>(token, GetPopupsByLayer(layer), settings, deepHide);
+                }
+                catch (Exception ex)
+                {
+                    APLogger.LogError($"Exception occurred: {ex.Message}");
+                }
+            }, UpdateCancellationTokenSource());
         }
         #endregion
         
@@ -199,19 +211,12 @@ namespace AdvancedPS.Core
             {
                 try
                 {
-                    List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                    if (popupsToShow.Count <= 0)
-                    {
-                        APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                        return;
-                    }
-                    
-                    await HidePopupsAsync(token, layer, null, deepHide);
+                    await HidePopupsAsync(token, GetPopupsExcludingLayer(layer), null, deepHide);
 
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync(token, popupsToShow, null, deepShow);
+                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null, deepShow);
                 }
                 catch (Exception ex)
                 {
@@ -233,19 +238,12 @@ namespace AdvancedPS.Core
             {
                 try
                 {
-                    List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                    if (popupsToShow.Count <= 0)
-                    {
-                        APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                        return;
-                    }
-
-                    await HidePopupsAsync<T>(token, layer, settings, deepHide);
+                    await HidePopupsAsync<T>(token, GetPopupsExcludingLayer(layer), settings, deepHide);
                     
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync<T>(token, popupsToShow, settings, deepShow);
+                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepShow);
                 }
                 catch (Exception ex)
                 {
@@ -268,19 +266,12 @@ namespace AdvancedPS.Core
             {
                 try
                 {
-                    List<IAdvancedPopup> popupsToShow = GetPopupsByLayer(layer);
-                    if (popupsToShow.Count <= 0)
-                    {
-                        APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
-                        return;
-                    }
-
-                    await HidePopupsAsync<T, J>(token, layer, settings, deepHide);
+                    await HidePopupsAsync<T, J>(token, GetPopupsExcludingLayer(layer), settings, deepHide);
                     
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync<T, J>(token, popupsToShow, settings, deepShow);
+                    await ShowPopupsAsync<T, J>(token, GetPopupsByLayer(layer), settings, deepShow);
                 }
                 catch (Exception ex)
                 {
@@ -360,7 +351,24 @@ namespace AdvancedPS.Core
         private static List<IAdvancedPopup> GetPopupsByLayer(PopupLayerEnum layer)
         {
             IAdvancedPopup[] activePopups = Object.FindObjectsOfType<IAdvancedPopup>();
-            return activePopups.Where(popup => popup.PopupLayer.HasFlag(layer)).ToList();
+            List<IAdvancedPopup> popups = activePopups.Where(popup => popup.PopupLayer.HasFlag(layer)).ToList();
+            if (popups.Count == 0)
+                APLogger.LogError($"AdvancedPopupSystem not found popup/s by '{layer}' layer!");
+
+            return popups;
+        }
+        
+        /// <summary>
+        /// Get popups excluding a specific layer in any loaded scene.
+        /// </summary>
+        private static List<IAdvancedPopup> GetPopupsExcludingLayer(PopupLayerEnum layer)
+        {
+            IAdvancedPopup[] activePopups = Object.FindObjectsOfType<IAdvancedPopup>();
+            List<IAdvancedPopup> popups = activePopups.Where(popup => !popup.PopupLayer.HasFlag(layer)).ToList();
+            if (popups.Count == 0)
+                APLogger.LogError($"AdvancedPopupSystem not found popup/s excluding '{layer}' layer!");
+
+            return popups;
         }
 
         /// <summary>
@@ -398,13 +406,9 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync(CancellationToken token, PopupLayerEnum layer, IDefaultSettings settings, bool deepHide)
+        private static async Task HidePopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide)
         {
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                tasks.Add(popup.HideAsync(token, settings, deepHide));
-            }
+            List<Task> tasks = popups.Select(popup => popup.HideAsync(token, settings, deepHide)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -412,14 +416,10 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync<T>(CancellationToken token, PopupLayerEnum layer, IDefaultSettings settings, bool deepHide) 
+        private static async Task HidePopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide) 
             where T : IAdvancedPopupDisplay, new()
         {
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                tasks.Add(popup.HideAsync<T>(token, settings, deepHide));
-            }
+            List<Task> tasks = popups.Select(popup => popup.HideAsync<T>(token, settings, deepHide)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -427,14 +427,10 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync<T, J>(CancellationToken token, PopupLayerEnum layer, IDefaultSettings settings, bool deepHide)
+        private static async Task HidePopupsAsync<T, J>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide)
             where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
         {
-            List<Task> tasks = new List<Task>();
-            foreach (IAdvancedPopup popup in Popups.Where(popup => !popup.PopupLayer.HasFlag(layer)))
-            {
-                tasks.Add(popup.HideAsync<T, J>(token, settings, deepHide));
-            }
+            List<Task> tasks = popups.Select(popup => popup.HideAsync<T,J>(token, settings, deepHide)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }

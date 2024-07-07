@@ -1,5 +1,7 @@
+using System.Linq;
 using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
+using AdvancedPS.Editor.Styles;
 using UnityEditor;
 using UnityEngine;
 
@@ -44,12 +46,18 @@ namespace AdvancedPS.Editor
             }
             EditorGUILayout.EndHorizontal();
 
-            DrawDefaultInspectorExcept("PopupLayer", "m_Script");
+            EditorGUILayout.BeginVertical(PopupSystemEditorStyles.backgroundStyle);
+            DrawBoolPropertiesInGrid();
+            EditorGUILayout.EndVertical();
+
+            DrawDefaultInspectorExcept(new string[] { "PopupLayer", "m_Script", "DeepPopups" }.Concat(GetBoolPropertyNames()).ToArray());
+            
+            DrawDeepPopupsProperty();
 
             serializedObject.ApplyModifiedProperties();
         }
-
-        private void DrawDefaultInspectorExcept(params string[] propertyNamesToExclude)
+        
+        private void DrawDefaultInspectorExcept(string[] propertyNamesToExclude)
         {
             SerializedProperty property = serializedObject.GetIterator();
             property.NextVisible(true);
@@ -61,6 +69,61 @@ namespace AdvancedPS.Editor
                 }
             }
             while (property.NextVisible(false));
+        }
+        
+        private void DrawDeepPopupsProperty()
+        {
+            SerializedProperty deepPopupsProperty = serializedObject.FindProperty("DeepPopups");
+            if (deepPopupsProperty != null)
+            {
+                EditorGUILayout.PropertyField(deepPopupsProperty, true);
+            }
+        }
+        
+        private void DrawBoolPropertiesInGrid()
+        {
+            SerializedProperty property = serializedObject.GetIterator();
+            property.NextVisible(true);
+
+            int columnCount = 2;
+            int currentColumn = 0;
+
+            EditorGUILayout.BeginHorizontal();
+            do
+            {
+                if (property.propertyType == SerializedPropertyType.Boolean)
+                {
+                    EditorGUILayout.PropertyField(property, true);
+
+                    currentColumn++;
+                    if (currentColumn >= columnCount)
+                    {
+                        EditorGUILayout.EndHorizontal();
+                        EditorGUILayout.BeginHorizontal();
+                        currentColumn = 0;
+                    }
+                }
+            }
+            while (property.NextVisible(false));
+            EditorGUILayout.EndHorizontal();
+        }
+        
+        private string[] GetBoolPropertyNames()
+        {
+            SerializedProperty property = serializedObject.GetIterator();
+            property.NextVisible(true);
+            var boolPropertyNames = new System.Collections.Generic.List<string>();
+
+            do
+            {
+                if (property.propertyType == SerializedPropertyType.Boolean)
+                {
+                    boolPropertyNames.Add(property.name);
+                }
+            }
+            while (property.NextVisible(false));
+
+            return boolPropertyNames.ToArray();
         }
  
         protected override void OnHeaderGUI()

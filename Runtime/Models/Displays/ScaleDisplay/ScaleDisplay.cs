@@ -32,9 +32,11 @@ namespace AdvancedPS.Core
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
-
+                
                 float t = elapsedTime / settings.Duration;
-                transform.localScale = Vector3.Lerp(initialScale, settingsLocal.ShowScale, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                
+                transform.localScale = Vector3.LerpUnclamped(initialScale, settingsLocal.ShowScale, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();
@@ -68,8 +70,11 @@ namespace AdvancedPS.Core
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
+                
                 float t = elapsedTime / settings.Duration;
-                transform.localScale = Vector3.Lerp(initialScale, settingsLocal.HideScale, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                
+                transform.localScale = Vector3.LerpUnclamped(initialScale, settingsLocal.HideScale, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();

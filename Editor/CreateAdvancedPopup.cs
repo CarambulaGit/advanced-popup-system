@@ -10,19 +10,28 @@ namespace AdvancedPS.Editor
         [MenuItem("GameObject/UI/Advanced Popup", false, 10)]
         private static void CreateNewAdvancedPopup()
         {
-            GameObject newPopup = new GameObject("Advanced Popup");
+            GameObject newPopup = new GameObject("Advanced Popup")
+            {
+                layer = LayerMask.NameToLayer("UI")
+            };
             RectTransform rectTransform = newPopup.AddComponent<RectTransform>();
             newPopup.AddComponent<CanvasRenderer>();
             newPopup.AddComponent<Image>();
             AdvancedPopup popup = newPopup.AddComponent<AdvancedPopup>();
             popup.RootTransform = rectTransform;
-            
+
+            Canvas canvas = null;
             Transform parentTransform = Selection.activeTransform;
             
-            Canvas canvas = parentTransform.GetComponentInParent<Canvas>();
+            if (parentTransform != null)
+                canvas = parentTransform.GetComponentInParent<Canvas>();
+            
             if (canvas == null)
             {
-                GameObject canvasObject = new GameObject("Canvas");
+                GameObject canvasObject = new GameObject("Canvas")
+                {
+                    layer = LayerMask.NameToLayer("UI")
+                };
                 canvas = canvasObject.AddComponent<Canvas>();
                 canvas.renderMode = RenderMode.ScreenSpaceOverlay;
                 canvasObject.AddComponent<CanvasScaler>();

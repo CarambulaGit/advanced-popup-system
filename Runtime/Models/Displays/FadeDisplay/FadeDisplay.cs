@@ -17,11 +17,9 @@ namespace AdvancedPS.Core
             }
             
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
+            transform.localScale = Vector3.one;
             if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
                 return;
-            }
 
             float initialAlpha = canvasGroup.alpha;
             float elapsedTime = 0;
@@ -30,9 +28,11 @@ namespace AdvancedPS.Core
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
-
+                
                 float t = elapsedTime / settings.Duration;
-                canvasGroup.alpha = Mathf.Lerp(initialAlpha, settingsLocal.MaxValue, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                
+                canvasGroup.alpha = Mathf.LerpUnclamped(initialAlpha, settingsLocal.MaxValue, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();
@@ -53,10 +53,7 @@ namespace AdvancedPS.Core
             
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
             if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
                 return;
-            }
 
             float initialAlpha = canvasGroup.alpha;
             float elapsedTime = 0;
@@ -65,9 +62,11 @@ namespace AdvancedPS.Core
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
-
+                
                 float t = elapsedTime / settings.Duration;
-                canvasGroup.alpha = Mathf.Lerp(initialAlpha, settingsLocal.MinValue, t);
+                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                
+                canvasGroup.alpha = Mathf.LerpUnclamped(initialAlpha, settingsLocal.MinValue, easedT);
 
                 elapsedTime += Time.deltaTime;
                 await Task.Yield();

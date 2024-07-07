@@ -12,6 +12,12 @@ namespace AdvancedPS.Core
     public class AdvancedPopup : IAdvancedPopup
     {
         /// <summary>
+        /// true - recommended for hide popup on Awake by CanvasGroup.alpha = 0.
+        /// </summary>
+        [Tooltip("true - recommended for hide popup on Awake by CanvasGroup.alpha = 0.")]
+        public bool AlphaToZeroOnAwake = true;
+        
+        /// <summary>
         /// For public events.
         /// </summary>
         public Action OnShowing;
@@ -39,7 +45,33 @@ namespace AdvancedPS.Core
         public override void Init()
         {
             canvasGroup = GetComponent<CanvasGroup>();
+            if (AlphaToZeroOnAwake)
+            {
+                canvasGroup.alpha = 0;
+                canvasGroup.interactable = false;
+                canvasGroup.blocksRaycasts = false;   
+            }
+            
             base.Init();
+        }
+        
+        private void Reset()
+        {
+            MoveComponentToTop(this);
+        }
+        
+        private static void MoveComponentToTop(Component component)
+        {
+            Component[] components = component.gameObject.GetComponents<Component>();
+            int index = Array.IndexOf(components, component);
+
+            if (index > 1) 
+            {
+                for (int i = index; i > 1; i--)
+                {
+                    UnityEditorInternal.ComponentUtility.MoveComponentUp(component);
+                }
+            }
         }
 
         /// <summary>

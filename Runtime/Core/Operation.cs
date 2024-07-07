@@ -36,6 +36,7 @@ namespace AdvancedPS.Core.System
         public void Cancel()
         {
             _source.Cancel();
+            _source.Dispose();
         }
     }
 }

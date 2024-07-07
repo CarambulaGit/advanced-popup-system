@@ -9,6 +9,10 @@ namespace AdvancedPS.Core.System
         /// </summary>
         public float Duration { get; set; }
         /// <summary>
+        /// Type of animation curve.
+        /// </summary>
+        public EasingType Easing { get; set; }
+        /// <summary>
         /// Event should Invoke when animation will end completely.
         /// </summary>
         public Action OnAnimationEnd { get; set; }
@@ -18,6 +22,7 @@ namespace AdvancedPS.Core.System
         protected IDefaultSettings()
         {
             Duration = 0.5f;
+            Easing = EasingType.EaseInOutQuad;
         }
     }
 }
