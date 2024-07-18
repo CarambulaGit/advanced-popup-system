@@ -8,22 +8,29 @@ namespace AdvancedPS.Core.Utils
     {
         private const string PackageFolderName = "advanced-popup-system";
         
-        private const string LayersEnumPath = "Runtime/Core/";
+        private const string DisplaysPath = "Runtime/Generated/Displays/";
+        private const string DisplaysDependenciesPath = "Runtime/Generated/";
+        private const string LayersEnumPath = "Runtime/Generated/";
         private const string SettingsPath = "Runtime/Settings/";
         private const string ImagesPath = "Runtime/Images/";
        
-        private const string LayersEnumFileName = "PopupLayerEnum.cs";
+        private const string DisplaysDependenciesFileName = "APS_Dependencies.generated.cs";
+        private const string LayersEnumFileName = "PopupLayerEnum.generated.cs";
         private const string SettingsFileName = "AP_Settings.json";
        
         public static readonly string SettingsFilePath;
         public static readonly string ImagesFolderPath;
+        public static readonly string DisplaysFolderPath;
         public static readonly string LayersEnumFilePath;
+        public static readonly string DisplaysDependenciesFilePath;
 
         static FileSearcher()
         {
             SettingsFilePath = GetSettingsFilePathInternal().Replace(@"\", "/");
             ImagesFolderPath = GetImagesFolderPathInternal().Replace(@"\", "/");
+            DisplaysFolderPath = GetDisplaysFolderPathInternal().Replace(@"\", "/");
             LayersEnumFilePath = GetLayersEnumFilePathInternal().Replace(@"\", "/");
+            DisplaysDependenciesFilePath = GetDisplaysDependenciesFilePathInternal().Replace(@"\", "/");
         }
         
         private static string GetSettingsFilePathInternal()
@@ -66,6 +73,23 @@ namespace AdvancedPS.Core.Utils
             return imagesFolderPath;
         }
         
+        private static string GetDisplaysFolderPathInternal()
+        {
+            string folderPath = FindProtectedFolderPath();
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new DirectoryNotFoundException($"The folder '{PackageFolderName}' was not found.");
+            }
+
+            string imagesFolderPath = Path.Combine(folderPath, DisplaysPath);
+            if (!Directory.Exists(imagesFolderPath))
+            {
+                Directory.CreateDirectory(imagesFolderPath);
+            }
+
+            return imagesFolderPath;
+        }
+        
         private static string GetLayersEnumFilePathInternal()
         {
             string folderPath = FindProtectedFolderPath();
@@ -81,6 +105,29 @@ namespace AdvancedPS.Core.Utils
             }
             
             string settingsFilePath = Path.Combine(layersEnumFolderPath, LayersEnumFileName);
+            if (!File.Exists(settingsFilePath))
+            {
+                File.WriteAllText(settingsFilePath, "");
+            }
+
+            return settingsFilePath;
+        }
+        
+        private static string GetDisplaysDependenciesFilePathInternal()
+        {
+            string folderPath = FindProtectedFolderPath();
+            if (string.IsNullOrEmpty(folderPath))
+            {
+                throw new DirectoryNotFoundException($"The folder '{PackageFolderName}' was not found.");
+            }
+
+            string layersEnumFolderPath = Path.Combine(folderPath, DisplaysDependenciesPath);
+            if (!Directory.Exists(layersEnumFolderPath))
+            {
+                Directory.CreateDirectory(layersEnumFolderPath);
+            }
+            
+            string settingsFilePath = Path.Combine(layersEnumFolderPath, DisplaysDependenciesFileName);
             if (!File.Exists(settingsFilePath))
             {
                 File.WriteAllText(settingsFilePath, "");

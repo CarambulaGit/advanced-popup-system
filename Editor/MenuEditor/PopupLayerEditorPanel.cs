@@ -19,7 +19,7 @@ namespace AdvancedPS.Editor
         private static bool autoSave;
         private static Vector2 scrollPosition;
 
-        private const string AutoSaveKey = "AutoSaveEnabled";
+        private const string AutoSaveKey = "APS_AutoSaveEnabled";
 
         public static void Initialize()
         {
@@ -84,7 +84,7 @@ namespace AdvancedPS.Editor
             }
 
             GUILayout.FlexibleSpace();
-            EditorGUILayoutExtensions.DrawHorizontalLine(new Color(1, 1, 1, 0.2f), 1, 5, 0);
+            EditorGUILayoutExtensions.DrawHorizontalLine();
             GUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
             

@@ -5,12 +5,9 @@
   "displayName": "Advanced Popup",
   "description": "Advanced Popup System - is a free flexible popup system.\nYou can add and change functionality depending on your needs.",
   "type": "library",
-
-  "samples": [
-    {
-      "displayName": "Examples",
-      "description": "Contains examples how to use this library.",
-      "path": "Samples~/Demo"
-    }
-  ]
+  "unity": "2020.3",
+  "author": {
+    "name": "dest-69",
+    "email": "vetalpopovetskiy@gmail.com"
+  }
 }

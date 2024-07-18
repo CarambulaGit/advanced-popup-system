@@ -13,11 +13,11 @@ namespace AdvancedPS.Core
     /// <summary>
     /// Core manager for "Advanced Popup System"
     /// </summary>
-    public static class AdvancedPopupSystem
+    public static partial class AdvancedPopupSystem
     {
         #region VARIABLES
         private static readonly List<IAdvancedPopup> Popups = new List<IAdvancedPopup>();
-        private static readonly List<IAdvancedPopupDisplay> Displays = new List<IAdvancedPopupDisplay>();
+        private static readonly List<IDisplay> Displays = new List<IDisplay>();
 
         private static CancellationTokenSource _source;
         #endregion
@@ -35,9 +35,9 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Get display entity with caching in AdvancedPopupSystem for better performance, because we don't need duplicate entity.
         /// </summary>
-        public static IAdvancedPopupDisplay GetDisplay<T>() where T : IAdvancedPopupDisplay, new()
+        public static IDisplay GetDisplay<T>() where T : IDisplay, new()
         {
-            IAdvancedPopupDisplay display = Displays.FirstOrDefault(popupDisplay => popupDisplay is T);
+            IDisplay display = Displays.FirstOrDefault(popupDisplay => popupDisplay is T);
             if (display == default)
             {
                 display = new T();
@@ -54,8 +54,7 @@ namespace AdvancedPS.Core
         /// Show/Add popup with the specified layer without hiding the rest layers.
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupShow(PopupLayerEnum layer, bool deepShow = false)
+        public static Operation PopupShow(PopupLayerEnum layer)
         {
             return new Operation(async token =>
             {
@@ -64,7 +63,7 @@ namespace AdvancedPS.Core
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null, deepShow);
+                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null);
                 }
                 catch (Exception ex)
                 {
@@ -78,8 +77,7 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupShow<T>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepShow = false) where T : IAdvancedPopupDisplay, new()
+        private static Operation PopupShowGeneric<T>(PopupLayerEnum layer, IDefaultSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -88,32 +86,7 @@ namespace AdvancedPS.Core
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepShow);
-                }
-                catch (Exception ex)
-                {
-                    APLogger.LogError($"Exception occurred: {ex.Message}");
-                }
-            }, UpdateCancellationTokenSource());
-        }
-
-        /// <summary>
-        /// Show/Add popup with the specified layer without hiding the rest layers by IAdvancedPopupDisplay generic T type for all popups.
-        /// </summary>
-        /// <param name="layer">The layer to show popup for.</param>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupShow<T, J>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepShow = false)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
-        {
-            return new Operation(async token =>
-            {
-                try
-                {
-                    if (token.IsCancellationRequested || !Application.isPlaying)
-                        return;
-
-                    await ShowPopupsAsync<T,J>(token, GetPopupsByLayer(layer), settings, deepShow);
+                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings);
                 }
                 catch (Exception ex)
                 {
@@ -128,8 +101,7 @@ namespace AdvancedPS.Core
         /// Show/Add popup with the specified layer without hiding the rest layers.
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
-        /// <param name="deepHide">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupHide(PopupLayerEnum layer, bool deepHide = false)
+        public static Operation PopupHide(PopupLayerEnum layer)
         {
             return new Operation(async token =>
             {
@@ -138,7 +110,7 @@ namespace AdvancedPS.Core
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await HidePopupsAsync(token, GetPopupsByLayer(layer), null, deepHide);
+                    await HidePopupsAsync(token, GetPopupsByLayer(layer), null);
                 }
                 catch (Exception ex)
                 {
@@ -152,8 +124,7 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupHide<T>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepHide = false) where T : IAdvancedPopupDisplay, new()
+        private static Operation PopupHideGeneric<T>(PopupLayerEnum layer, IDefaultSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -162,32 +133,7 @@ namespace AdvancedPS.Core
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await HidePopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepHide);
-                }
-                catch (Exception ex)
-                {
-                    APLogger.LogError($"Exception occurred: {ex.Message}");
-                }
-            }, UpdateCancellationTokenSource());
-        }
-
-        /// <summary>
-        /// Show/Add popup with the specified layer without hiding the rest layers by IAdvancedPopupDisplay generic T type for all popups.
-        /// </summary>
-        /// <param name="layer">The layer to show popup for.</param>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide">If true, shows all "DeepPopups" with the specified layer.</param>
-        public static Operation PopupHide<T, J>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepHide = false)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
-        {
-            return new Operation(async token =>
-            {
-                try
-                {
-                    if (token.IsCancellationRequested || !Application.isPlaying)
-                        return;
-
-                    await HidePopupsAsync<T,J>(token, GetPopupsByLayer(layer), settings, deepHide);
+                    await HidePopupsAsync<T>(token, GetPopupsByLayer(layer), settings);
                 }
                 catch (Exception ex)
                 {
@@ -203,20 +149,18 @@ namespace AdvancedPS.Core
         /// Show all popups with the specified layer.
         /// </summary>
         /// <param name="layer">The layer to show popups for.</param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
-        public static Operation LayerShow(PopupLayerEnum layer, bool deepShow = false, bool deepHide = true)
+        public static Operation LayerShow(PopupLayerEnum layer)
         {
             return new Operation(async token =>
             {
                 try
                 {
-                    await HidePopupsAsync(token, GetPopupsExcludingLayer(layer), null, deepHide);
+                    await HidePopupsAsync(token, GetPopupsExcludingLayer(layer), null);
 
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null, deepShow);
+                    await ShowPopupsAsync(token, GetPopupsByLayer(layer), null);
                 }
                 catch (Exception ex)
                 {
@@ -230,20 +174,18 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="layer">The layer to show popups for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
-        public static Operation LayerShow<T>(PopupLayerEnum layer, IDefaultSettings settings = null,  bool deepShow = false, bool deepHide = true) where T : IAdvancedPopupDisplay, new()
+        private static Operation LayerShowGeneric<T>(PopupLayerEnum layer, IDefaultSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
                 try
                 {
-                    await HidePopupsAsync<T>(token, GetPopupsExcludingLayer(layer), settings, deepHide);
+                    await HidePopupsAsync<T>(token, GetPopupsExcludingLayer(layer), settings);
                     
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings, deepShow);
+                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), settings);
                 }
                 catch (Exception ex)
                 {
@@ -256,22 +198,21 @@ namespace AdvancedPS.Core
         /// Show all popups with the specified layer by IAdvancedPopupDisplay generic T type for all popups.
         /// </summary>
         /// <param name="layer">The layer to show popups for.</param>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow">If true, shows all "DeepPopups" with the specified layer.</param>
-        /// <param name="deepHide">If true, hides all "DeepPopups" without the specified layer.</param>
-        public static Operation LayerShow<T, J>(PopupLayerEnum layer, IDefaultSettings settings = null, bool deepShow = false, bool deepHide = true)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
+        /// <param name="showSettings"> The settings for the open popup animation. If not provided, the default settings will be used. </param>
+        /// <param name="hideSettings"> The settings for the open hide animation. If not provided, the default settings will be used. </param>
+        private static Operation LayerShowGeneric<T, J>(PopupLayerEnum layer, IDefaultSettings showSettings = null, IDefaultSettings hideSettings = null)
+            where T : IDisplay, new() where J : IDisplay, new()
         {
             return new Operation(async token =>
             {
                 try
                 {
-                    await HidePopupsAsync<T, J>(token, GetPopupsExcludingLayer(layer), settings, deepHide);
+                    await HidePopupsAsync<J>(token, GetPopupsExcludingLayer(layer), hideSettings);
                     
                     if (token.IsCancellationRequested || !Application.isPlaying)
                         return;
 
-                    await ShowPopupsAsync<T, J>(token, GetPopupsByLayer(layer), settings, deepShow);
+                    await ShowPopupsAsync<T>(token, GetPopupsByLayer(layer), showSettings);
                 }
                 catch (Exception ex)
                 {
@@ -293,7 +234,7 @@ namespace AdvancedPS.Core
             {
                 try
                 {
-                    await HideAllPopupsAsync(token, null, deepHide);
+                    await HideAllPopupsAsync(token, null);
                 }
                 catch (Exception ex)
                 {
@@ -306,35 +247,13 @@ namespace AdvancedPS.Core
         /// Hide all popups by IAdvancedPopupDisplay generic T type for all popups.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide">If true, hides all "DeepPopups".</param>
-        public static Operation HideAll<T>(IDefaultSettings settings = null, bool deepHide = false) where T : IAdvancedPopupDisplay, new()
+        private static Operation HideAllGeneric<T>(IDefaultSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
                 try
                 {
-                    await HideAllPopupsAsync<T>(token, settings, deepHide);
-                }
-                catch (Exception ex)
-                {
-                    APLogger.LogError($"Exception occurred: {ex.Message}");
-                }
-            }, UpdateCancellationTokenSource());
-        }
-
-        /// <summary>
-        /// Hide all popups by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
-        /// </summary>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide">If true, hides all "DeepPopups".</param>
-        public static Operation HideAll<T, J>(IDefaultSettings settings = null, bool deepHide = true) where T : IAdvancedPopupDisplay, new()
-            where J : IAdvancedPopupDisplay, new()
-        {
-            return new Operation(async token =>
-            {
-                try
-                {
-                    await HideAllPopupsAsync<T, J>(token, settings, deepHide);
+                    await HideAllPopupsAsync<T>(token, settings);
                 }
                 catch (Exception ex)
                 {
@@ -374,9 +293,9 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show popups with specified display type.
         /// </summary>
-        private static async Task ShowPopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepShow)
+        private static async Task ShowPopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings)
         {
-            List<Task> tasks = popups.Select(popup => popup.ShowAsync(token, settings, deepShow)).ToList();
+            List<Task> tasks = popups.Select(popup => popup.ShowAsync(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -384,21 +303,10 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show popups with specified display type.
         /// </summary>
-        private static async Task ShowPopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepShow) 
-            where T : IAdvancedPopupDisplay, new()
+        private static async Task ShowPopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings) 
+            where T : IDisplay, new()
         {
-            List<Task> tasks = popups.Select(popup => popup.ShowAsync<T>(token, settings, deepShow)).ToList();
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
-        /// Show popups with specified display type.
-        /// </summary>
-        private static async Task ShowPopupsAsync<T, J>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepShow)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
-        {
-            List<Task> tasks = popups.Select(popup => popup.ShowAsync<T, J>(token, settings, deepShow)).ToList();
+            List<Task> tasks = popups.Select(popup => popup.ShowAsync<T>(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -406,9 +314,9 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide)
+        private static async Task HidePopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings)
         {
-            List<Task> tasks = popups.Select(popup => popup.HideAsync(token, settings, deepHide)).ToList();
+            List<Task> tasks = popups.Select(popup => popup.HideAsync(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -416,21 +324,10 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide) 
-            where T : IAdvancedPopupDisplay, new()
+        private static async Task HidePopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings) 
+            where T : IDisplay, new()
         {
-            List<Task> tasks = popups.Select(popup => popup.HideAsync<T>(token, settings, deepHide)).ToList();
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
-        /// Hide popups with specified display type.
-        /// </summary>
-        private static async Task HidePopupsAsync<T, J>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, IDefaultSettings settings, bool deepHide)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
-        {
-            List<Task> tasks = popups.Select(popup => popup.HideAsync<T,J>(token, settings, deepHide)).ToList();
+            List<Task> tasks = popups.Select(popup => popup.HideAsync<T>(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -438,9 +335,9 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide all popups.
         /// </summary>
-        private static async Task HideAllPopupsAsync(CancellationToken token, IDefaultSettings settings, bool deepHide)
+        private static async Task HideAllPopupsAsync(CancellationToken token, IDefaultSettings settings)
         {
-            List<Task> tasks = Popups.Select(popup => popup.HideAsync(token, settings, deepHide)).ToList();
+            List<Task> tasks = Popups.Select(popup => popup.HideAsync(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }
@@ -448,21 +345,10 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide all popups.
         /// </summary>
-        private static async Task HideAllPopupsAsync<T>(CancellationToken token, IDefaultSettings settings, bool deepHide) 
-            where T : IAdvancedPopupDisplay, new()
+        private static async Task HideAllPopupsAsync<T>(CancellationToken token, IDefaultSettings settings) 
+            where T : IDisplay, new()
         {
-            List<Task> tasks = Popups.Select(popup => popup.HideAsync<T>(token, settings, deepHide)).ToList();
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
-        /// Hide all popups.
-        /// </summary>
-        private static async Task HideAllPopupsAsync<T, J>(CancellationToken token, IDefaultSettings settings, bool deepHide)
-            where T : IAdvancedPopupDisplay, new() where J : IAdvancedPopupDisplay, new()
-        {
-            List<Task> tasks = Popups.Select(popup => popup.HideAsync<T, J>(token, settings, deepHide)).ToList();
+            List<Task> tasks = Popups.Select(popup => popup.HideAsync<T>(token, settings)).ToList();
             if (tasks.Count > 0)
                 await Task.WhenAll(tasks);
         }

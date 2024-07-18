@@ -114,15 +114,18 @@ namespace AdvancedPS.Core
                 await ShowAsync(token, settings, deepShow);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task ShowAsync(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false)
+        public override async Task ShowAsync(CancellationToken token = default, IDefaultSettings settings = null, bool deepShow = false)
         {
             if (_subscribed) return;
-                
+
+            if (token == default)
+                UpdateCancellationTokenSource();
+            
             Subscribe();
             
             List<Task> tasks = new List<Task>
             {
-                CachedDisplay.ShowMethod(RootTransform, settings ??= CachedSettings, token)
+                CachedShowDisplay.ShowMethod(RootTransform, settings ??= CachedSettings, token)
             };
 
             if (deepShow)
@@ -146,15 +149,18 @@ namespace AdvancedPS.Core
                 await ShowAsync<T>(token, settings, deepShow);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task ShowAsync<T>(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false)
+        public override async Task ShowAsync<T>(CancellationToken token = default, IDefaultSettings settings = null, bool deepShow = false)
         {
             if (_subscribed) return;
                 
+            if (token == default)
+                UpdateCancellationTokenSource();
+            
             Subscribe();
 
             List<Task> tasks = new List<Task>();
 
-            IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
+            IDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
             tasks.Add(popupDisplay.ShowMethod(RootTransform, settings ??= CachedSettings, token));
 
             if (deepShow)
@@ -162,38 +168,6 @@ namespace AdvancedPS.Core
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
                     tasks.Add(popup.ShowAsync<T>(token, settings, true));
-                }
-            }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-        }
-
-        /// <summary>
-        /// Show the popup with specific display types for the popup and deep popups.
-        /// </summary>
-        public override Operation Show<T,J>(IDefaultSettings settings = null, bool deepShow = false)
-        {
-            return new Operation(async token =>
-            {
-                await ShowAsync<T,J>(token, settings, deepShow);
-            }, UpdateCancellationTokenSource());
-        }
-        public override async Task ShowAsync<T, J>(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false)
-        {
-            if (_subscribed) return;
-                
-            Subscribe();
-
-            List<Task> tasks = new List<Task>();
-
-            IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.ShowMethod(RootTransform, settings ??= CachedSettings, token));
-
-            if (deepShow)
-            {
-                foreach (IAdvancedPopup popup in DeepPopups)
-                {
-                    tasks.Add(popup.ShowAsync<J>(token, settings, true));
                 }
             }
             if (tasks.Count > 0)
@@ -210,14 +184,17 @@ namespace AdvancedPS.Core
                 await HideAsync(token, settings, deepHide);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task HideAsync(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false)
+        public override async Task HideAsync(CancellationToken token = default, IDefaultSettings settings = null, bool deepHide = false)
         {
             if (_awaitingHide || !_subscribed) return;
             _awaitingHide = true;
+            
+            if (token == default)
+                UpdateCancellationTokenSource();
 
             List<Task> tasks = new List<Task>
             {
-                CachedDisplay.HideMethod(RootTransform, settings ??= CachedSettings, token)
+                CachedShowDisplay.HideMethod(RootTransform, settings ??= CachedSettings, token)
             };
 
             if (deepHide)
@@ -244,14 +221,17 @@ namespace AdvancedPS.Core
                 await HideAsync<T>(token, settings, deepHide);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task HideAsync<T>(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false)
+        public override async Task HideAsync<T>(CancellationToken token = default, IDefaultSettings settings = null, bool deepHide = false)
         {
             if (_awaitingHide || !_subscribed) return;
             _awaitingHide = true;
+            
+            if (token == default)
+                UpdateCancellationTokenSource();
 
             List<Task> tasks = new List<Task>();
 
-            IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
+            IDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
             tasks.Add(popupDisplay.HideMethod(RootTransform, settings ??= CachedSettings, token));
 
             if (deepHide)
@@ -259,40 +239,6 @@ namespace AdvancedPS.Core
                 foreach (IAdvancedPopup popup in DeepPopups)
                 {
                     tasks.Add(popup.HideAsync<T>(token, settings, true));
-                }
-            }
-            if (tasks.Count > 0)
-                await Task.WhenAll(tasks);
-
-            if (_subscribed)
-                Unsubscribe();
-        }
-
-        /// <summary>
-        /// Hide the popup with specific display types for the popup and deep popups.
-        /// </summary>
-        public override Operation Hide<T,J>(IDefaultSettings settings = null, bool deepHide = false)
-        {
-            return new Operation(async token =>
-            {
-                await HideAsync<T,J>(token, settings, deepHide);
-            }, UpdateCancellationTokenSource());
-        }
-        public override async Task HideAsync<T, J>(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false)
-        {
-            if (_awaitingHide || !_subscribed) return;
-            _awaitingHide = true;
-
-            List<Task> tasks = new List<Task>();
-
-            IAdvancedPopupDisplay popupDisplay = AdvancedPopupSystem.GetDisplay<T>();
-            tasks.Add(popupDisplay.HideMethod(RootTransform, settings ??= CachedSettings, token));
-
-            if (deepHide)
-            {
-                foreach (IAdvancedPopup popup in DeepPopups)
-                {
-                    tasks.Add(popup.HideAsync<J>(token, settings, true));
                 }
             }
             if (tasks.Count > 0)

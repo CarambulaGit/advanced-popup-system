@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace AdvancedPS.Core.System
 {
-    public interface IAdvancedPopupDisplay
+    public interface IDisplay
     {
         /// <summary>
         /// Logic for popup showing animation.
@@ -14,7 +14,7 @@ namespace AdvancedPS.Core.System
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         public Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default);
-        
+
         /// <summary>
         /// Logic for popup hiding animation.
         /// </summary>

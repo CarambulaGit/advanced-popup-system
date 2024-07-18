@@ -6,22 +6,12 @@ using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class SlideDisplay : IAdvancedPopupDisplay
+    public class SlideDisplay : IDisplay
     {
         public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not SlideSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(SlideSettings)}. Used cached one.");
-                return;
-            }
-            
+            SlideSettings settingsLocal = settings as SlideSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
-            if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
-                return;
-            }
             
             SetCanvasGroupState(canvasGroup, true);
             transform.localScale = Vector3.one;
@@ -31,13 +21,13 @@ namespace AdvancedPS.Core
 
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 
                 transform.localPosition = Vector3.LerpUnclamped(startPos, targetPos, easedT);
 
@@ -47,36 +37,26 @@ namespace AdvancedPS.Core
 
             // Ensure the final position is set correctly
             transform.localPosition = targetPos;
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
 
         public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not SlideSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(SlideSettings)}. Used cached one.");
-                return;
-            }
-            
+            SlideSettings settingsLocal = settings as SlideSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
-            if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
-                return;
-            }
             
             Vector3 startPos = transform.localPosition;
             Vector3 targetPos = GetStartPosition(transform, settingsLocal);
 
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 transform.localPosition = Vector3.LerpUnclamped(startPos, targetPos, easedT);
 
                 elapsedTime += Time.deltaTime;
@@ -89,7 +69,7 @@ namespace AdvancedPS.Core
             // Set CanvasGroup state to hidden
             SetCanvasGroupState(canvasGroup, false);
             transform.localScale = Vector3.zero;
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
         
         /// <summary>

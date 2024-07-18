@@ -2,6 +2,7 @@
 {
     public enum EasingType
     {
+        Linear,
         EaseInSine,
         EaseOutSine,
         EaseInOutSine,

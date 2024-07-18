@@ -9,6 +9,7 @@ namespace AdvancedPS.Editor.Styles
         public static readonly GUIStyle NormalTabStyle;
         public static readonly GUIStyle ScrollViewStyle;
         public static readonly GUIStyle BoldButtonStyle;
+        public static readonly GUIStyle ExperimentalButtonStyle;
         public static readonly GUIStyle backgroundStyle;
         
         static PopupSystemEditorStyles()
@@ -52,6 +53,12 @@ namespace AdvancedPS.Editor.Styles
             BoldButtonStyle = new GUIStyle(GUI.skin.button)
             {
                 fontStyle = FontStyle.Bold
+            };
+
+            ExperimentalButtonStyle = new GUIStyle(GUI.skin.button)
+            {
+                padding = new RectOffset(10, 10, 0, 0),
+                fixedHeight = 18
             };
 
             NormalTabStyle = new GUIStyle(GUI.skin.button)

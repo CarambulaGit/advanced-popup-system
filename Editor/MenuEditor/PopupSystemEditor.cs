@@ -67,7 +67,7 @@ namespace AdvancedPS.Editor
                 GUILayout.Space(blackBackgroundRect.height);
             }
 
-            EditorGUILayoutExtensions.DrawHorizontalLine(new Color(1, 1, 1, 0.2f), 1, 20, 0);
+            EditorGUILayoutExtensions.DrawHorizontalLine(padding: 20);
 
             switch (currentTab)
             {

@@ -6,31 +6,25 @@ using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class FadeDisplay : IAdvancedPopupDisplay
+    public class FadeDisplay : IDisplay
     {
         public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not FadeSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(FadeSettings)}. Used cached one.");
-                return;
-            }
-            
+            FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
+            
             transform.localScale = Vector3.one;
-            if (canvasGroup == null)
-                return;
 
             float initialAlpha = canvasGroup.alpha;
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
                 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 
                 canvasGroup.alpha = Mathf.LerpUnclamped(initialAlpha, settingsLocal.MaxValue, easedT);
 
@@ -40,31 +34,24 @@ namespace AdvancedPS.Core
 
             // Ensure the final alpha is set correctly
             SetCanvasGroupState(canvasGroup, settingsLocal, true);
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
 
         public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not FadeSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(FadeSettings)}. Used cached one.");
-                return;
-            }
-            
+            FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
-            if (canvasGroup == null)
-                return;
 
             float initialAlpha = canvasGroup.alpha;
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
                 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 
                 canvasGroup.alpha = Mathf.LerpUnclamped(initialAlpha, settingsLocal.MinValue, easedT);
 
@@ -74,7 +61,7 @@ namespace AdvancedPS.Core
 
             // Ensure the final alpha is set correctly
             SetCanvasGroupState(canvasGroup, settingsLocal, false);
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
 
         /// <summary>

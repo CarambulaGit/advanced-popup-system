@@ -6,35 +6,25 @@ using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class ScaleDisplay : IAdvancedPopupDisplay
+    public class ScaleDisplay : IDisplay
     {
         public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not ScaleSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(ScaleSettings)}. Used cached one.");
-                return;
-            }
-            
+            ScaleSettings settingsLocal = settings as ScaleSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
-            if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
-                return;
-            }
             
             SetCanvasGroupState(canvasGroup, true);
 
             Vector3 initialScale = transform.localScale;
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
                 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 
                 transform.localScale = Vector3.LerpUnclamped(initialScale, settingsLocal.ShowScale, easedT);
 
@@ -44,35 +34,25 @@ namespace AdvancedPS.Core
 
             // Ensure the final scale is set correctly
             transform.localScale = settingsLocal.ShowScale;
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
 
         public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {
-            if (settings is not ScaleSettings settingsLocal)
-            {
-                APLogger.LogError($"Wrong type of display settings, should be {nameof(ScaleSettings)}. Used cached one.");
-                return;
-            }
-            
+            ScaleSettings settingsLocal = settings as ScaleSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
-            if (canvasGroup == null)
-            {
-                APLogger.LogError("AdvancedPopupDisplay not found CanvasGroup.");
-                return;
-            }
             
             Vector3 initialScale = transform.localScale;
             float elapsedTime = 0;
 
-            while (elapsedTime < settings.Duration)
+            while (elapsedTime < settingsLocal.Duration)
             {
                 if (cancellationToken.IsCancellationRequested || !Application.isPlaying)
                     return;
 
                 
-                float t = elapsedTime / settings.Duration;
-                float easedT = EasingFunctions.GetEasingValue(settings.Easing, t);
+                float t = elapsedTime / settingsLocal.Duration;
+                float easedT = EasingFunctions.GetEasingValue(settingsLocal.Easing, t);
                 
                 transform.localScale = Vector3.LerpUnclamped(initialScale, settingsLocal.HideScale, easedT);
 
@@ -85,7 +65,7 @@ namespace AdvancedPS.Core
 
             // Set CanvasGroup state to hidden
             SetCanvasGroupState(canvasGroup, false);
-            settings.OnAnimationEnd?.Invoke();
+            settingsLocal.OnAnimationEnd?.Invoke();
         }
         
         /// <summary>

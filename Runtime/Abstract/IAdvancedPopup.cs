@@ -34,7 +34,8 @@ namespace AdvancedPS.Core.System
         /// <summary>
         /// Cached method for the animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
         /// </summary>
-        protected IAdvancedPopupDisplay CachedDisplay { get; private set; }
+        protected IDisplay CachedShowDisplay { get; private set; }
+        protected IDisplay CachedHideDisplay { get; private set; }
         /// <summary>
         /// Cached settings for the animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
         /// </summary>
@@ -57,9 +58,9 @@ namespace AdvancedPS.Core.System
         /// </summary>
         /// <typeparam name="T">The type of advanced popup display to create and cache.</typeparam>
         /// <param name="settings">The settings for the animation. If not provided, the default settings will be used.</param>
-        public void SetCachedDisplay<T>(IDefaultSettings settings) where T : IAdvancedPopupDisplay, new()
+        public void SetCachedDisplay<T>(IDefaultSettings settings) where T : IDisplay, new()
         {
-            CachedDisplay = AdvancedPopupSystem.GetDisplay<T>();
+            CachedShowDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedSettings = settings;
         }
 
@@ -98,7 +99,7 @@ namespace AdvancedPS.Core.System
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
-        public abstract Task ShowAsync(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false);
+        public abstract Task ShowAsync(CancellationToken token = default, IDefaultSettings settings = null, bool deepShow = false);
 
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for all popup's without await.
@@ -106,33 +107,15 @@ namespace AdvancedPS.Core.System
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
         public abstract Operation Show<T>(IDefaultSettings settings = null, bool deepShow = false)
-            where T : IAdvancedPopupDisplay, new();
+            where T : IDisplay, new();
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for all popup's.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
-        public abstract Task ShowAsync<T>(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false)
-            where T : IAdvancedPopupDisplay, new();
-        
-        /// <summary>
-        /// Show popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups" without await.
-        /// </summary>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
-        public abstract Operation Show<T, J>(IDefaultSettings settings = null, bool deepShow = false)
-            where T : IAdvancedPopupDisplay, new()
-            where J : IAdvancedPopupDisplay, new();
-        /// <summary>
-        /// Show popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepShow"> true - show all "DeepPopups" of this popup </param>
-        public abstract Task ShowAsync<T, J>(CancellationToken token, IDefaultSettings settings = null, bool deepShow = false)
-            where T : IAdvancedPopupDisplay, new()
-            where J : IAdvancedPopupDisplay, new();
+        public abstract Task ShowAsync<T>(CancellationToken token = default, IDefaultSettings settings = null, bool deepShow = false)
+            where T : IDisplay, new();
         #endregion
 
 
@@ -149,7 +132,7 @@ namespace AdvancedPS.Core.System
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
-        public abstract Task HideAsync(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false);
+        public abstract Task HideAsync(CancellationToken token = default, IDefaultSettings settings = null, bool deepHide = false);
         
         /// <summary>
         /// Hide popup by IAdvancedPopupDisplay generic T type for all popup's without await.
@@ -157,7 +140,7 @@ namespace AdvancedPS.Core.System
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
         public abstract Operation Hide<T>(IDefaultSettings settings = null, bool deepHide = false)
-            where T : IAdvancedPopupDisplay, new();
+            where T : IDisplay, new();
 
         /// <summary>
         /// Hide popup by IAdvancedPopupDisplay generic T type for all popup's.
@@ -165,26 +148,8 @@ namespace AdvancedPS.Core.System
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
         /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
-        public abstract Task HideAsync<T>(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false)
-            where T : IAdvancedPopupDisplay, new();
-        
-        /// <summary>
-        /// Hide popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups" without await.
-        /// </summary>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
-        public abstract Operation Hide<T, J>(IDefaultSettings settings = null, bool deepHide = false)
-            where T : IAdvancedPopupDisplay, new()
-            where J : IAdvancedPopupDisplay, new();
-        /// <summary>
-        /// Hide popup by IAdvancedPopupDisplay generic T type for this popup and J type for "DeepPopups".
-        /// </summary>
-        /// <param name="token"></param>
-        /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        /// <param name="deepHide"> true - hide all "DeepPopups" of this popup </param>
-        public abstract Task HideAsync<T, J>(CancellationToken token, IDefaultSettings settings = null, bool deepHide = false)
-            where T : IAdvancedPopupDisplay, new()
-            where J : IAdvancedPopupDisplay, new();
+        public abstract Task HideAsync<T>(CancellationToken token = default, IDefaultSettings settings = null, bool deepHide = false)
+            where T : IDisplay, new();
         #endregion
         
         protected CancellationTokenSource UpdateCancellationTokenSource()

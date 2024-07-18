@@ -46,6 +46,7 @@ namespace AdvancedPS.Core.System
         {
             switch (type)
             {
+                case EasingType.Linear: return t;
                 case EasingType.EaseInSine: return 1 - Mathf.Cos((t * Mathf.PI) / 2);
                 case EasingType.EaseOutSine: return Mathf.Sin((t * Mathf.PI) / 2);
                 case EasingType.EaseInOutSine: return -(Mathf.Cos(Mathf.PI * t) - 1) / 2;

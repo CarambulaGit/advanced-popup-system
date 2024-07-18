@@ -1,4 +1,6 @@
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
 using AdvancedPS.Editor.Styles;
@@ -14,6 +16,10 @@ namespace AdvancedPS.Editor
         
         private static string imagesPath;
         private static Texture2D popupIcon;
+        private static Texture2D popupBunner;
+
+        private bool isShowSettings;
+        private const string IsShowSettingsKey = "APS_AutoSaveEnabled";
         
         private void OnEnable()
         {
@@ -27,6 +33,21 @@ namespace AdvancedPS.Editor
                 imagesPath = FileSearcher.ImagesFolderPath;
                 popupIcon = AssetDatabase.LoadAssetAtPath<Texture2D>(imagesPath + "AP_LogoBlack32.png");
             }
+
+            if (popupBunner == null)
+            {
+                popupBunner = AssetDatabase.LoadAssetAtPath<Texture2D>(imagesPath + "AP_Banner.png");
+            }
+
+            if (!PlayerPrefs.HasKey(IsShowSettingsKey))
+            {
+                PlayerPrefs.SetInt(IsShowSettingsKey, 1);
+                isShowSettings = true;
+            }
+            else
+            {
+                isShowSettings = PlayerPrefs.GetInt(IsShowSettingsKey) == 1;
+            }
         }
         
         public override void OnInspectorGUI()
@@ -36,6 +57,7 @@ namespace AdvancedPS.Editor
             
             serializedObject.Update();
             
+            EditorGUILayout.BeginVertical(PopupSystemEditorStyles.backgroundStyle);
             EditorGUILayout.BeginHorizontal();
             SerializedProperty popupLayerProperty = serializedObject.FindProperty("PopupLayer");
             EditorGUILayout.PropertyField(popupLayerProperty, new GUIContent("Popup Layer"));
@@ -45,8 +67,35 @@ namespace AdvancedPS.Editor
                 PopupSystemEditor.ShowWindow();
             }
             EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginVertical(PopupSystemEditorStyles.backgroundStyle);
+            
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            if (GUILayout.Button(isShowSettings ? "Hide settings" : "Show settings", GUILayout.Width(100)))
+            {
+                isShowSettings = !isShowSettings;
+                PlayerPrefs.SetInt(IsShowSettingsKey, isShowSettings ? 1 : 0);
+            }
+            if (GUILayout.Button(new GUIContent("Preview", 
+                        EditorGUIUtility.IconContent("console.warnicon.sml").image, 
+                        "-Experimental-\nPreview show & hide animation in editor."), PopupSystemEditorStyles.ExperimentalButtonStyle))
+            {
+                ExperimentalShowHide();
+            }
+            EditorGUILayout.EndHorizontal();
+            if (isShowSettings)
+            {
+                DrawPopupSettings();
+                GUILayout.BeginHorizontal();
+                GUILayout.FlexibleSpace();
+                GUILayout.Label("General Settings");
+                GUILayout.FlexibleSpace();
+                GUILayout.EndHorizontal();
+                EditorGUILayoutExtensions.DrawHorizontalLine();
+            }
+            else
+            {
+                EditorGUILayoutExtensions.DrawHorizontalLine();
+            }
             DrawBoolPropertiesInGrid();
             EditorGUILayout.EndVertical();
 
@@ -55,6 +104,77 @@ namespace AdvancedPS.Editor
             DrawDeepPopupsProperty();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        private async void ExperimentalShowHide()
+        {
+            var targetType = target.GetType();
+            var methods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+            
+            var showMethod = methods.FirstOrDefault(m => m.Name == "ShowAsync" && !m.IsGenericMethod);
+            var hideMethod = methods.FirstOrDefault(m => m.Name == "HideAsync" && !m.IsGenericMethod);
+            
+            if (showMethod == null || hideMethod == null)
+            {
+                Debug.LogError("Not found methods 'ShowAsync' or/and 'HideAsync', preview was safely aborted.");
+                return;
+            }
+            
+            var popup = (IAdvancedPopup)target;
+            bool wasActive = popup.gameObject.activeSelf;
+            bool wasVisible = popup.GetComponent<CanvasGroup>().alpha != 0;
+            
+            if (!wasActive)
+                popup.gameObject.SetActive(true);
+
+            if (wasVisible)
+            {
+                await (Task)hideMethod.Invoke(target, new object[] { default, null, false });
+                await (Task)showMethod.Invoke(target, new object[] { default, null, false });
+            }
+            else
+            {
+                await (Task)showMethod.Invoke(target, new object[] { default, null, false });
+                await (Task)hideMethod.Invoke(target, new object[] { default, null, false });
+            }
+            
+            if (!wasActive)
+                popup.gameObject.SetActive(false);
+        }
+
+        private void DrawPopupSettings()
+        {
+            EditorGUILayoutExtensions.DrawHorizontalLine();
+            GUILayout.BeginHorizontal();
+            
+            GUILayout.BeginVertical();
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Show Settings");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            EditorGUILayoutExtensions.DrawHorizontalLine();
+            
+            GUILayout.Space(200);
+            GUILayout.EndVertical();
+            
+            EditorGUILayoutExtensions.DrawVerticalLine();
+            
+            GUILayout.BeginVertical();
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("Hide Settings");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            EditorGUILayoutExtensions.DrawHorizontalLine();
+            
+            GUILayout.Space(200);
+            GUILayout.EndVertical();
+            
+            GUILayout.EndHorizontal();
+            EditorGUILayoutExtensions.DrawHorizontalLine();
         }
         
         private void DrawDefaultInspectorExcept(string[] propertyNamesToExclude)
@@ -85,27 +205,17 @@ namespace AdvancedPS.Editor
             SerializedProperty property = serializedObject.GetIterator();
             property.NextVisible(true);
 
-            int columnCount = 2;
-            int currentColumn = 0;
-
-            EditorGUILayout.BeginHorizontal();
             do
             {
                 if (property.propertyType == SerializedPropertyType.Boolean)
                 {
-                    EditorGUILayout.PropertyField(property, true);
-
-                    currentColumn++;
-                    if (currentColumn >= columnCount)
-                    {
-                        EditorGUILayout.EndHorizontal();
-                        EditorGUILayout.BeginHorizontal();
-                        currentColumn = 0;
-                    }
+                    EditorGUILayout.BeginHorizontal();
+                    EditorGUILayout.LabelField(property.displayName, GUILayout.Width(150));
+                    property.boolValue = EditorGUILayout.Toggle(property.boolValue);
+                    EditorGUILayout.EndHorizontal();
                 }
             }
             while (property.NextVisible(false));
-            EditorGUILayout.EndHorizontal();
         }
         
         private string[] GetBoolPropertyNames()
@@ -130,12 +240,21 @@ namespace AdvancedPS.Editor
         {
             if (popupIcon != null)
             {
-                var rect = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
-                rect.y -= 24;
-                rect.x = 18;
-                rect.xMax = 36;
+                float availableWidth = Screen.width;
+                float aspectRatio = (float)popupBunner.width / popupBunner.height;
+                float bannerHeight = availableWidth / aspectRatio - 75;
                 
-                EditorGUI.DrawPreviewTexture(rect, popupIcon);
+                var rectBanner = EditorGUILayout.GetControlRect(false, bannerHeight, GUILayout.ExpandWidth(true));
+                rectBanner.y -= 5;
+                rectBanner.height += 30;
+                
+                GUI.DrawTexture(rectBanner, popupBunner, ScaleMode.ScaleToFit);
+                
+                var rectIcon = EditorGUILayout.GetControlRect(false, EditorGUIUtility.singleLineHeight);
+                rectIcon.y -= 26 + bannerHeight;
+                rectIcon.x = 18;
+                rectIcon.xMax = 36;
+                EditorGUI.DrawPreviewTexture(rectIcon, popupIcon);
             }
             else
             {
