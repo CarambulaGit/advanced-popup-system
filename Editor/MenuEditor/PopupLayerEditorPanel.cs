@@ -100,7 +100,9 @@ namespace AdvancedPS.Editor
                     SaveEnumChanges();
             }
 
-            GUI.enabled = !autoSave;
+            bool anyChanged = _enumNameChanged.Any(changed => changed);
+            
+            GUI.enabled = anyChanged && !autoSave;
             if (GUILayout.Button("Save", GUILayout.Width(80)))
             {
                 SaveEnumChanges();
@@ -108,7 +110,7 @@ namespace AdvancedPS.Editor
             GUI.enabled = true;
             GUILayout.EndHorizontal();
 
-            if (_enumNameChanged != null && _enumNameChanged.Any(changed => changed) && autoSave)
+            if (_enumNameChanged != null && anyChanged && autoSave)
             {
                 SaveEnumChanges();
                 Array.Clear(_enumNameChanged, 0, _enumNameChanged.Length);

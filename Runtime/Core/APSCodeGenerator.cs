@@ -6,17 +6,18 @@ namespace AdvancedPS.Core.System
 {
     public static class APSCodeGenerator
     {
-        public static void Execute()
+        private const string ClassName = "AdvancedPopupSystem";
+        
+        public static void Execute(string[] displayNames)
         {
-            var className = "AdvancedPopupSystem";
-            var code = GenerateMethodsForDisplay(className);
-            var path = $"Assets/advanced-popup-system/Runtime/Generated/{className}.generated.cs";
+            var code = GenerateMethodsForDisplay(ClassName, displayNames);
+            var path = $"Assets/advanced-popup-system/Runtime/Generated/{ClassName}.generated.cs";
 
             File.WriteAllText(path, code);
             AssetDatabase.Refresh();
         }
 
-        private static string GenerateMethodsForDisplay(string className)
+        private static string GenerateMethodsForDisplay(string className, string[] displayNames)
         {
             var sb = new StringBuilder();
             sb.AppendLine("using AdvancedPS.Core.System;");
@@ -31,10 +32,10 @@ namespace AdvancedPS.Core.System
             sb.AppendLine($"    public static partial class {className}");
             sb.AppendLine("    {");
 
-            GeneratePopupShowGenericMethods(sb);
-            GeneratePopupHideGenericMethods(sb);
-            GenerateLayerShowGenericMethods(sb);
-            GenerateHideAllGenericMethods(sb);
+            GeneratePopupShowGenericMethods(sb, displayNames);
+            GeneratePopupHideGenericMethods(sb, displayNames);
+            GenerateLayerShowGenericMethods(sb, displayNames);
+            GenerateHideAllGenericMethods(sb, displayNames);
 
             sb.AppendLine("    }");
             sb.AppendLine("}");
@@ -42,13 +43,12 @@ namespace AdvancedPS.Core.System
             return sb.ToString();
         }
 
-        private static void GeneratePopupShowGenericMethods(StringBuilder sb)
+        private static void GeneratePopupShowGenericMethods(StringBuilder sb, string[] displayNames)
         {
-            var dependencies = APS_Dependencies.DisplaySettingsDependency;
-            foreach (var dependency in dependencies)
+            foreach (string display in displayNames)
             {
-                var displayType = dependency.Key.GetType().Name;
-                var settingsType = dependency.Value.GetType().Name;
+                string displayType = display + "Display";
+                string settingsType = display + "Settings";
 
                 sb.AppendLine(
                     $"        public static Operation PopupShow<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
@@ -58,13 +58,12 @@ namespace AdvancedPS.Core.System
             }
         }
 
-        private static void GeneratePopupHideGenericMethods(StringBuilder sb)
+        private static void GeneratePopupHideGenericMethods(StringBuilder sb, string[] displayNames)
         {
-            var dependencies = APS_Dependencies.DisplaySettingsDependency;
-            foreach (var dependency in dependencies)
+            foreach (string display in displayNames)
             {
-                var displayType = dependency.Key.GetType().Name;
-                var settingsType = dependency.Value.GetType().Name;
+                string displayType = display + "Display";
+                string settingsType = display + "Settings";
 
                 sb.AppendLine(
                     $"        public static Operation PopupHide<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
@@ -74,13 +73,12 @@ namespace AdvancedPS.Core.System
             }
         }
 
-        private static void GenerateLayerShowGenericMethods(StringBuilder sb)
+        private static void GenerateLayerShowGenericMethods(StringBuilder sb, string[] displayNames)
         {
-            var dependencies = APS_Dependencies.DisplaySettingsDependency;
-            foreach (var dependency in dependencies)
+            foreach (string display in displayNames)
             {
-                var displayType = dependency.Key.GetType().Name;
-                var settingsType = dependency.Value.GetType().Name;
+                string displayType = display + "Display";
+                string settingsType = display + "Settings";
 
                 sb.AppendLine(
                     $"        public static Operation LayerShow<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
@@ -88,10 +86,10 @@ namespace AdvancedPS.Core.System
                 sb.AppendLine("            return LayerShowGeneric<T>(layer, settings);");
                 sb.AppendLine("        }");
 
-                foreach (var dependencySecond in dependencies)
+                foreach (string dependencySecond in displayNames)
                 {
-                    var displayTypeSecond = dependencySecond.Key.GetType().Name;
-                    var settingsTypeSecond = dependencySecond.Value.GetType().Name;
+                    string displayTypeSecond = dependencySecond + "Display";
+                    string settingsTypeSecond = dependencySecond + "Settings";
 
                     sb.AppendLine(
                         $"        public static Operation LayerShow<T,J>(PopupLayerEnum layer, {settingsType} showSettings = null, {settingsTypeSecond} hideSettings = null) where T : {displayType}, new() where J : {displayTypeSecond}, new()");
@@ -102,13 +100,12 @@ namespace AdvancedPS.Core.System
             }
         }
 
-        private static void GenerateHideAllGenericMethods(StringBuilder sb)
+        private static void GenerateHideAllGenericMethods(StringBuilder sb, string[] displayNames)
         {
-            var dependencies = APS_Dependencies.DisplaySettingsDependency;
-            foreach (var dependency in dependencies)
+            foreach (string display in displayNames)
             {
-                var displayType = dependency.Key.GetType().Name;
-                var settingsType = dependency.Value.GetType().Name;
+                string displayType = display + "Display";
+                string settingsType = display + "Settings";
 
                 sb.AppendLine(
                     $"        public static Operation HideAll<T>({settingsType} settings = null) where T : {displayType}, new()");

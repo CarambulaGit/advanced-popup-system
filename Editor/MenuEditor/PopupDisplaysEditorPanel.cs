@@ -1,8 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
@@ -16,12 +16,10 @@ namespace AdvancedPS.Editor
     {
         private static string[] _displayNames;
         private static bool[] _displayNameChanged;
-        private static string displayFilePath;
         private static Vector2 scrollPosition;
 
         public static void Initialize()
         {
-            displayFilePath = FileSearcher.DisplaysDependenciesFilePath;
             LoadEnumNames();
         }
         
@@ -41,7 +39,7 @@ namespace AdvancedPS.Editor
                     newEnumName = ValidateAndFormatDisplayName(newEnumName);
                     if (newEnumName != null)
                     {
-                        _displayNames[i] = newEnumName;
+                        _displayNames[i] = RemoveDisplaySuffix(newEnumName) + "Display";
                         _displayNameChanged[i] = true;
                     }
                     else
@@ -61,7 +59,13 @@ namespace AdvancedPS.Editor
                 {
                     if (GUILayout.Button("Delete", GUILayout.Width(60)))
                     {
-                        DeleteDisplay(i);
+                        if (EditorUtility.DisplayDialog("Confirm Delete",
+                                $"Are you sure you want to delete the display '{_displayNames[i]}'? This will delete the display and its settings scripts.",
+                                "Delete", "Cancel"))
+                        {
+                            DeleteDisplay(i);
+                            DeleteDisplayAndSettingsFiles(newEnumName);
+                        }
                     }
                 }
                 
@@ -116,16 +120,15 @@ namespace AdvancedPS.Editor
             _displayNameChanged = _displayNameChanged.Where((_, i) => i != index).ToArray();
         }
 
-        private static string ValidateAndFormatDisplayName(string enumName)
+        private static string ValidateAndFormatDisplayName(string displayName)
         {
-            if (enumName == null)
+            if (displayName == null)
                 return string.Empty;
 
-            enumName = Regex.Replace(enumName, @"\s+", "_");
-            enumName = Regex.Replace(enumName, "_+", "_");
-            enumName = enumName.ToUpper();
+            displayName = Regex.Replace(displayName, @"\s+", "_");
+            displayName = Regex.Replace(displayName, "_+", "_");
 
-            return !Regex.IsMatch(enumName, @"^[A-Z0-9_]+$") ? null : enumName;
+            return !Regex.IsMatch(displayName, @"^[a-zA-Z0-9_]+$") ? null : displayName;
         }
 
         private static string RemoveDisplaySuffix(string input)
@@ -136,46 +139,38 @@ namespace AdvancedPS.Editor
         
         private static void SaveDisplayChanges()
         {
-            if (!File.Exists(displayFilePath))
-            {
-                APLogger.LogError($"File not found: {displayFilePath}");
-                return;
-            }
+            List<string> cleanDisplayNames = new List<string>();
 
-            StringBuilder enumFileContent = new StringBuilder();
-
-            enumFileContent.AppendLine("using System.Collections.Generic;");
-            enumFileContent.AppendLine("namespace AdvancedPS.Core.System");
-            enumFileContent.AppendLine("{");
-            enumFileContent.AppendLine("    public static class APS_Dependencies");
-            enumFileContent.AppendLine("    {");
-            enumFileContent.AppendLine("        public static readonly Dictionary<IDisplay, IDefaultSettings> DisplaySettingsDependency =");
-            enumFileContent.AppendLine("            new Dictionary<IDisplay, IDefaultSettings>()");
-            enumFileContent.AppendLine("            {");
-
-            foreach (var display in _displayNames)
+            foreach (string display in _displayNames)
             {
                 if (string.IsNullOrEmpty(display))
                     continue;
 
                 string displayName = RemoveDisplaySuffix(display);
+                cleanDisplayNames.Add(displayName);
+
                 string displayClass = displayName + "Display";
-                string settingsClass = displayName + "Settings";
         
                 if (GetTypeByName(displayClass) == null)
                 {
                     CreateDisplayAndSettingsFiles(displayName);
                 }
-                
-                enumFileContent.AppendLine($"           {{ new {displayClass}(), new {settingsClass}() }},");
             }
-            
-            enumFileContent.AppendLine("            };");
-            enumFileContent.AppendLine("    }");
-            enumFileContent.AppendLine("}");
 
-            File.WriteAllText(displayFilePath, enumFileContent.ToString());
             AssetDatabase.Refresh();
+            APSCodeGenerator.Execute(cleanDisplayNames.ToArray());
+        }
+        
+        private static void DeleteDisplayAndSettingsFiles(string displayName)
+        {
+            string displayFolderPath = Path.Combine(FileSearcher.DisplaysFolderPath, displayName);
+            if (Directory.Exists(displayFolderPath))
+            {
+                DirectoryInfo di = new DirectoryInfo(displayFolderPath);
+                di.Delete(true);
+            }
+
+            SaveDisplayChanges();
         }
         
         private static void CreateDisplayAndSettingsFiles(string displayName)
@@ -191,8 +186,6 @@ namespace AdvancedPS.Editor
 
             File.WriteAllText(displayPath, GenerateDisplayClass(displayName + "Display", displayName + "Settings"));
             File.WriteAllText(settingsPath, GenerateSettingsClass(displayName + "Settings"));
-
-            AssetDatabase.Refresh();
         }
 
         private static string GenerateDisplayClass(string className, string settingsName)
@@ -208,16 +201,35 @@ namespace AdvancedPS.Core
 {{
     public class {className} : IDisplay
     {{
-        public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {{
             {settingsName} settingsLocal = settings as {settingsName};
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
+
+            return Task.CompletedTask;
         }}
         
-        public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
         {{
             {settingsName} settingsLocal = settings as {settingsName};
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
+
+            return Task.CompletedTask;
+        }}
+
+        /// <summary>
+        /// Get the CanvasGroup component from the transform.
+        /// </summary>
+        /// <param name=""transform"">The transform of the popup.</param>
+        /// <returns>The CanvasGroup component if it exists, null otherwise.</returns>
+        private static CanvasGroup GetCanvasGroup(Component transform)
+        {{
+            CanvasGroup canvasGroup = transform.GetComponent<CanvasGroup>();
+            if (canvasGroup == null)
+            {{
+                APLogger.LogWarning($""CanvasGroup component missing on {{transform.name}}"");
+            }}
+            return canvasGroup;
         }}
     }}
 }}
