@@ -8,7 +8,7 @@ namespace AdvancedPS.Core
 {
     public class FadeDisplay : IDisplay
     {
-        public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task ShowMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -37,7 +37,7 @@ namespace AdvancedPS.Core
             settingsLocal.OnAnimationEnd?.Invoke();
         }
 
-        public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task HideMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);

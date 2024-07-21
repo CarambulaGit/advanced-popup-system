@@ -1,6 +1,5 @@
 ﻿using System;
 using AdvancedPS.Core.System;
-using AdvancedPS.Core.Utils;
 using AdvancedPS.Editor.Styles;
 using UnityEditor;
 using UnityEngine;
@@ -9,35 +8,48 @@ namespace AdvancedPS.Editor
 {
     public static class PopupSettingsEditor
     {
-        private static PopupSettings Settings;
+        private static PopupSettings _settings;
         
-        private static bool customIconsEnabled;
-        private static int logTypeIndex;
-        private static readonly string[] logTypes = { "Error", "Warning", "Info" };
+        private static bool _customIconsEnabled;
+        private static bool _keyEventSystemEnabled;
+        private static int _logTypeIndex;
+        private static readonly string[] LOGTypes = { "Error", "Warning", "Info" };
         
         public static void Initialize()
         {
             LoadSettings();
         }
 
-        public static void OnGUI()
+        public static void OnGUIInternall()
         {
             GUILayout.BeginHorizontal();
             GUILayout.Label("Custom icons:", GUILayout.ExpandWidth(false));
-            bool newCustomIconsEnabled = GUILayout.Toggle(customIconsEnabled, customIconsEnabled ? "[x]" : "[ ]", PopupSystemEditorStyles.ToggleStyle);
-            if (newCustomIconsEnabled != customIconsEnabled)
+            bool newCustomIconsEnabled = GUILayout.Toggle(_customIconsEnabled, _customIconsEnabled ? "[x]" : "[ ]", APSEditorStyles.ToggleStyle);
+            if (newCustomIconsEnabled != _customIconsEnabled)
             {
-                customIconsEnabled = newCustomIconsEnabled;
+                _customIconsEnabled = newCustomIconsEnabled;
                 SaveSettings();
             }
             GUILayout.EndHorizontal();
             GUILayout.Space(5);
+            
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Key Event Tracking:", GUILayout.ExpandWidth(false));
+            bool newKeyEventSystemEnabled = GUILayout.Toggle(_keyEventSystemEnabled, _keyEventSystemEnabled ? "[x]" : "[ ]", APSEditorStyles.ToggleStyle);
+            if (newKeyEventSystemEnabled != _keyEventSystemEnabled)
+            {
+                _keyEventSystemEnabled = newKeyEventSystemEnabled;
+                SaveSettings();
+            }
+            GUILayout.EndHorizontal();
+            GUILayout.Space(5);
+            
             GUILayout.BeginHorizontal();
             GUILayout.Label("Log Type:", GUILayout.ExpandWidth(false));
-            int newLogTypeIndex = EditorGUILayout.Popup(logTypeIndex, logTypes);
-            if (newLogTypeIndex != logTypeIndex)
+            int newLogTypeIndex = EditorGUILayout.Popup(_logTypeIndex, LOGTypes);
+            if (newLogTypeIndex != _logTypeIndex)
             {
-                logTypeIndex = newLogTypeIndex;
+                _logTypeIndex = newLogTypeIndex;
                 SaveSettings();
             }
             GUILayout.EndHorizontal();
@@ -45,18 +57,20 @@ namespace AdvancedPS.Editor
 
         private static void SaveSettings()
         {
-            Settings.CustomIconsEnabled = customIconsEnabled;
-            Settings.LogType = logTypes[logTypeIndex];
+            _settings.CustomIconsEnabled = _customIconsEnabled;
+            _settings.LogType = LOGTypes[_logTypeIndex];
+            _settings.KeyEventSystemEnabled = _keyEventSystemEnabled;
             
             SettingsManager.SaveSettings();
         }
 
         private static void LoadSettings()
         {
-            Settings = SettingsManager.LoadSettings();
+            _settings = SettingsManager.LoadSettings();
             
-            customIconsEnabled = Settings.CustomIconsEnabled;
-            logTypeIndex = Array.IndexOf(logTypes, Settings.LogType);
+            _customIconsEnabled = _settings.CustomIconsEnabled;
+            _keyEventSystemEnabled = _settings.KeyEventSystemEnabled;
+            _logTypeIndex = Array.IndexOf(LOGTypes, _settings.LogType);
         }
     }
 }

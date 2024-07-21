@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class SlideSettings : IDefaultSettings
+    public class SlideSettings : DefaultSettings
     {
         /// <summary>
         /// From witch side popup will start move.

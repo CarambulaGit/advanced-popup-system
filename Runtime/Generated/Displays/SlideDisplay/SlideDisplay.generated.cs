@@ -8,7 +8,7 @@ namespace AdvancedPS.Core
 {
     public class SlideDisplay : IDisplay
     {
-        public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task ShowMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             SlideSettings settingsLocal = settings as SlideSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -40,7 +40,7 @@ namespace AdvancedPS.Core
             settingsLocal.OnAnimationEnd?.Invoke();
         }
 
-        public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task HideMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             SlideSettings settingsLocal = settings as SlideSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);

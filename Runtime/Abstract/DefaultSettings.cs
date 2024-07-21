@@ -1,25 +1,29 @@
 using System;
+using UnityEngine.Events;
 
 namespace AdvancedPS.Core.System
 {
-    public abstract class IDefaultSettings
+    [Serializable]
+    public class DefaultSettings
     {
         /// <summary>
         /// Duration animation in seconds.
         /// </summary>
-        public float Duration { get; set; }
+        public float Duration;
+
         /// <summary>
         /// Type of animation curve.
         /// </summary>
-        public EasingType Easing { get; set; }
+        public EasingType Easing;
+
         /// <summary>
         /// Event should Invoke when animation will end completely.
         /// </summary>
-        public Action OnAnimationEnd { get; set; }
+        public UnityEvent OnAnimationEnd;
         /// <summary>
         /// Setting default values.
         /// </summary>
-        protected IDefaultSettings()
+        public DefaultSettings()
         {
             Duration = 0.5f;
             Easing = EasingType.EaseInOutQuad;

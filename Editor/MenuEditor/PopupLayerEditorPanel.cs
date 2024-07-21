@@ -28,10 +28,10 @@ namespace AdvancedPS.Editor
             autoSave = PlayerPrefs.GetInt(AutoSaveKey, 1) == 1;
         }
 
-        public static void OnGUI()
+        public static void OnGUIInternall()
         {
             GUILayout.BeginVertical();
-            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, PopupSystemEditorStyles.ScrollViewStyle);
+            scrollPosition = EditorGUILayout.BeginScrollView(scrollPosition, APSEditorStyles.ScrollViewStyle);
 
             Array.Resize(ref _enumNameChanged, _enumNames.Length);
             for (int i = 0; i < _enumNames.Length; i++)
@@ -77,7 +77,7 @@ namespace AdvancedPS.Editor
             EditorGUILayout.EndScrollView();
             if (_enumNames.All(s => !string.IsNullOrEmpty(s)))
             {
-                if (GUILayout.Button("+", PopupSystemEditorStyles.BoldButtonStyle,GUILayout.Height(15)))
+                if (GUILayout.Button("+", APSEditorStyles.BoldButtonStyle,GUILayout.Height(15)))
                 { 
                     AddEnum(string.Empty);
                 }
@@ -89,7 +89,7 @@ namespace AdvancedPS.Editor
             GUILayout.FlexibleSpace();
             
             GUILayout.Label("Auto-Save", GUILayout.ExpandWidth(false));
-            bool newAutoSave = GUILayout.Toggle(autoSave, autoSave ? "[x]" : "[ ]", PopupSystemEditorStyles.ToggleStyle);
+            bool newAutoSave = GUILayout.Toggle(autoSave, autoSave ? "[x]" : "[ ]", APSEditorStyles.ToggleStyle);
             if (newAutoSave != autoSave)
             {
                 autoSave = newAutoSave;

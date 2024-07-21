@@ -34,6 +34,7 @@ namespace AdvancedPS.Core.System
                 Settings = new PopupSettings
                 {
                     CustomIconsEnabled = true,
+                    KeyEventSystemEnabled = true,
                     LogType = "Warning"
                 };
                 SaveSettings();

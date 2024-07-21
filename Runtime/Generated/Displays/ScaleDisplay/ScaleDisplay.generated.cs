@@ -8,7 +8,7 @@ namespace AdvancedPS.Core
 {
     public class ScaleDisplay : IDisplay
     {
-        public async Task ShowMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task ShowMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             ScaleSettings settingsLocal = settings as ScaleSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -37,7 +37,7 @@ namespace AdvancedPS.Core
             settingsLocal.OnAnimationEnd?.Invoke();
         }
 
-        public async Task HideMethod(RectTransform transform, IDefaultSettings settings, CancellationToken cancellationToken = default)
+        public async Task HideMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
         {
             ScaleSettings settingsLocal = settings as ScaleSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);

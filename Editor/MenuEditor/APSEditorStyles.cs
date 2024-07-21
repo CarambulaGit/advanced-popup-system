@@ -2,7 +2,7 @@ using UnityEngine;
 
 namespace AdvancedPS.Editor.Styles
 {
-    public static class PopupSystemEditorStyles
+    public static class APSEditorStyles
     {
         public static readonly GUIStyle ToggleStyle;
         public static readonly GUIStyle SelectedTabStyle;
@@ -10,9 +10,10 @@ namespace AdvancedPS.Editor.Styles
         public static readonly GUIStyle ScrollViewStyle;
         public static readonly GUIStyle BoldButtonStyle;
         public static readonly GUIStyle ExperimentalButtonStyle;
-        public static readonly GUIStyle backgroundStyle;
+        public static readonly GUIStyle BackgroundStyle;
+        public static readonly GUIStyle LineStyle;
         
-        static PopupSystemEditorStyles()
+        static APSEditorStyles()
         {
             ToggleStyle = new GUIStyle(GUI.skin.toggle)
             {
@@ -31,7 +32,13 @@ namespace AdvancedPS.Editor.Styles
             backgroundTexture.SetPixel(0, 0, new Color(0.19f, 0.19f, 0.19f, 1f));
             backgroundTexture.Apply();
             
-            backgroundStyle = new GUIStyle
+            LineStyle = new GUIStyle
+            {
+                padding = new RectOffset(0, 0, 0, 0),
+                margin = new RectOffset(-25,-25, 0, 0)
+            };
+            
+            BackgroundStyle = new GUIStyle
             {
                 normal =
                 {

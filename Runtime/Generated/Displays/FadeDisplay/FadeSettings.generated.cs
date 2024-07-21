@@ -2,7 +2,7 @@
 
 namespace AdvancedPS.Core
 {
-    public class FadeSettings : IDefaultSettings
+    public class FadeSettings : DefaultSettings
     {
         /// <summary>
         /// Target alpha of CanvasGroup on shown.

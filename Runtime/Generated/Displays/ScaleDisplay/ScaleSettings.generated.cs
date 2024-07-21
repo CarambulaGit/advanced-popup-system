@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class ScaleSettings : IDefaultSettings
+    public class ScaleSettings : DefaultSettings
     {
         /// <summary>
         /// Target scale of GameObject on shown.

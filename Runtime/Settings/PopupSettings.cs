@@ -6,6 +6,7 @@ namespace AdvancedPS.Core.System
     public class PopupSettings
     {
         public bool CustomIconsEnabled { get; set; }
+        public bool KeyEventSystemEnabled { get; set; }
         public string LogType { get; set; }
     }
 }

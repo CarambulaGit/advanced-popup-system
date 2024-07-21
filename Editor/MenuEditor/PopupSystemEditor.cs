@@ -74,13 +74,13 @@ namespace AdvancedPS.Editor
             switch (currentTab)
             {
                 case Tab.Layers:
-                    PopupLayerEditorPanel.OnGUI();
+                    PopupLayerEditorPanel.OnGUIInternall();
                     break;
                 case Tab.Displays:
-                    PopupDisplaysEditorPanel.OnGUI();
+                    PopupDisplaysEditorPanel.OnGUIInternall();
                     break;
                 case Tab.Settings:
-                    PopupSettingsEditor.OnGUI();
+                    PopupSettingsEditor.OnGUIInternall();
                     break;
             }
         }
@@ -88,15 +88,15 @@ namespace AdvancedPS.Editor
         private void DrawTabs()
         {
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Layers", currentTab == Tab.Layers ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
+            if (GUILayout.Button("Layers", currentTab == Tab.Layers ? APSEditorStyles.SelectedTabStyle : APSEditorStyles.NormalTabStyle))
             {
                 currentTab = Tab.Layers;
             }
-            if (GUILayout.Button("Displays", currentTab == Tab.Displays ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
+            if (GUILayout.Button("Displays", currentTab == Tab.Displays ? APSEditorStyles.SelectedTabStyle : APSEditorStyles.NormalTabStyle))
             {
                 currentTab = Tab.Displays;
             }
-            if (GUILayout.Button("Settings", currentTab == Tab.Settings ? PopupSystemEditorStyles.SelectedTabStyle : PopupSystemEditorStyles.NormalTabStyle))
+            if (GUILayout.Button("Settings", currentTab == Tab.Settings ? APSEditorStyles.SelectedTabStyle : APSEditorStyles.NormalTabStyle))
             {
                 currentTab = Tab.Settings;
             }

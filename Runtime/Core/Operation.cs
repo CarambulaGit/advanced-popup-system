@@ -12,6 +12,8 @@ namespace AdvancedPS.Core.System
 
         public Operation(Func<CancellationToken, Task> operation, CancellationTokenSource source = null)
         {
+            if (operation == null) return;
+            
             _operation = operation;
             _source = source ?? new CancellationTokenSource();
             _ = ExecuteAsync();

@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using AdvancedPS.Editor.Styles;
+using UnityEditor;
 using UnityEngine;
     
 namespace AdvancedPS.Editor
@@ -24,7 +25,7 @@ namespace AdvancedPS.Editor
             if (color == default)
                 color = new Color(1, 1, 1, 0.2f);
             
-            Rect rect = EditorGUILayout.GetControlRect(false, GUILayout.ExpandHeight(true));
+            Rect rect = EditorGUILayout.GetControlRect(false, 0, APSEditorStyles.LineStyle, GUILayout.ExpandHeight(true));
             rect.x += rect.width / 2f - thickness / 2f + padding / 2f;
             rect.y += margin;
             rect.width = thickness;

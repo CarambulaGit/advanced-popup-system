@@ -1,5 +1,8 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
@@ -17,7 +20,8 @@ namespace AdvancedPS.Editor
         private static string imagesPath;
         private static Texture2D popupIcon;
         private static Texture2D popupBunner;
-
+        private Dictionary<Type, List<Type>> cachedTypes;
+        
         private bool isShowSettings;
         private const string IsShowSettingsKey = "APS_AutoSaveEnabled";
         
@@ -48,6 +52,33 @@ namespace AdvancedPS.Editor
             {
                 isShowSettings = PlayerPrefs.GetInt(IsShowSettingsKey) == 1;
             }
+            
+            CacheTypes();
+        }
+        
+        private void CacheTypes()
+        {
+            cachedTypes = new Dictionary<Type, List<Type>>();
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            foreach (var assembly in assemblies)
+            {
+                var types = assembly.GetTypes();
+                foreach (var type in types)
+                {
+                    if (type.IsClass && !type.IsAbstract)
+                    {
+                        foreach (var baseType in type.GetInterfaces().Concat(new[] { type.BaseType }).Where(t => t != null))
+                        {
+                            if (!cachedTypes.ContainsKey(baseType))
+                            {
+                                cachedTypes[baseType] = new List<Type>();
+                            }
+                            cachedTypes[baseType].Add(type);
+                        }
+                    }
+                }
+            }
         }
         
         public override void OnInspectorGUI()
@@ -57,7 +88,7 @@ namespace AdvancedPS.Editor
             
             serializedObject.Update();
             
-            EditorGUILayout.BeginVertical(PopupSystemEditorStyles.backgroundStyle);
+            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
             EditorGUILayout.BeginHorizontal();
             SerializedProperty popupLayerProperty = serializedObject.FindProperty("PopupLayer");
             EditorGUILayout.PropertyField(popupLayerProperty, new GUIContent("Popup Layer"));
@@ -77,7 +108,7 @@ namespace AdvancedPS.Editor
             }
             if (GUILayout.Button(new GUIContent("Preview", 
                         EditorGUIUtility.IconContent("console.warnicon.sml").image, 
-                        "-Experimental-\nPreview show & hide animation in editor."), PopupSystemEditorStyles.ExperimentalButtonStyle))
+                        "-Experimental-\nPreview show & hide animation in editor."), APSEditorStyles.ExperimentalButtonStyle))
             {
                 ExperimentalShowHide();
             }
@@ -96,12 +127,15 @@ namespace AdvancedPS.Editor
             {
                 EditorGUILayoutExtensions.DrawHorizontalLine();
             }
+            DrawDeepPopupsProperty();
             DrawBoolPropertiesInGrid();
             EditorGUILayout.EndVertical();
 
-            DrawDefaultInspectorExcept(new string[] { "PopupLayer", "m_Script", "DeepPopups" }.Concat(GetBoolPropertyNames()).ToArray());
-            
-            DrawDeepPopupsProperty();
+            DrawDefaultInspectorExcept(new string[]
+            {
+                "PopupLayer", "m_Script", "DeepPopups", "inspectorShowDisplay", "inspectorHideDisplay",
+                "HotKeyShow", "HotKeyHide", "CachedShowSettings", "CachedHideSettings"
+            }.Concat(GetBoolPropertyNames()).ToArray());
 
             serializedObject.ApplyModifiedProperties();
         }
@@ -110,13 +144,14 @@ namespace AdvancedPS.Editor
         {
             var targetType = target.GetType();
             var methods = targetType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-            
+
+            var initMethod = methods.FirstOrDefault(m => m.Name == "Init");
             var showMethod = methods.FirstOrDefault(m => m.Name == "ShowAsync" && !m.IsGenericMethod);
             var hideMethod = methods.FirstOrDefault(m => m.Name == "HideAsync" && !m.IsGenericMethod);
             
-            if (showMethod == null || hideMethod == null)
+            if (initMethod == null || showMethod == null || hideMethod == null)
             {
-                Debug.LogError("Not found methods 'ShowAsync' or/and 'HideAsync', preview was safely aborted.");
+                Debug.LogError("Not found methods Init/ShowAsync/HideAsync - preview was safely aborted.");
                 return;
             }
             
@@ -127,15 +162,17 @@ namespace AdvancedPS.Editor
             if (!wasActive)
                 popup.gameObject.SetActive(true);
 
+            initMethod.Invoke(target, null);
+
             if (wasVisible)
             {
-                await (Task)hideMethod.Invoke(target, new object[] { default, null, false });
-                await (Task)showMethod.Invoke(target, new object[] { default, null, false });
+                await (Task)hideMethod.Invoke(target, new object[] { default, null });
+                await (Task)showMethod.Invoke(target, new object[] { default, null });
             }
             else
             {
-                await (Task)showMethod.Invoke(target, new object[] { default, null, false });
-                await (Task)hideMethod.Invoke(target, new object[] { default, null, false });
+                await (Task)showMethod.Invoke(target, new object[] { default, null });
+                await (Task)hideMethod.Invoke(target, new object[] { default, null });
             }
             
             if (!wasActive)
@@ -144,6 +181,7 @@ namespace AdvancedPS.Editor
 
         private void DrawPopupSettings()
         {
+            float width = Screen.width / 4.3f;
             EditorGUILayoutExtensions.DrawHorizontalLine();
             GUILayout.BeginHorizontal();
             
@@ -155,8 +193,13 @@ namespace AdvancedPS.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
-            
-            GUILayout.Space(200);
+            GUILayout.Space(20);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyShow"), new GUIContent("Show Key"), GUILayout.Width(width));
+            GUILayout.Space(5);
+            DrawTypeDropdown("inspectorShowDisplay", "Display:", typeof(IDisplay), width);
+            GUILayout.Space(5);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("CachedShowSettings"), new GUIContent("Display Settings"), GUILayout.Width(width));
+            GUILayout.Space(20);
             GUILayout.EndVertical();
             
             EditorGUILayoutExtensions.DrawVerticalLine();
@@ -169,21 +212,57 @@ namespace AdvancedPS.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
-            
-            GUILayout.Space(200);
+            GUILayout.Space(20);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyHide"), new GUIContent("Hide Key"), GUILayout.Width(width));
+            GUILayout.Space(5);
+            DrawTypeDropdown("inspectorHideDisplay", "Display:", typeof(IDisplay), width);
+            GUILayout.Space(5);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("CachedHideSettings"), new GUIContent("Display Settings"), GUILayout.Width(width));
+            GUILayout.Space(20);
             GUILayout.EndVertical();
             
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
         }
-        
+
+        private void DrawTypeDropdown(string propertyName, string label, Type baseType, float width)
+        {
+            var property = serializedObject.FindProperty(propertyName);
+            if (property == null)
+            {
+                Debug.LogError($"Property {propertyName} not found.");
+                return;
+            }
+
+            if (!cachedTypes.TryGetValue(baseType, out var types) || types.Count == 0)
+            {
+                Debug.LogError($"No types found inheriting from {baseType}.");
+                return;
+            }
+
+            var typeNames = types.Select(t => t.Name).ToList();
+
+            // Ensure property has a valid default value if it's null or empty
+            if (string.IsNullOrEmpty(property.stringValue) || types.All(t => t.FullName != property.stringValue))
+            {
+                property.stringValue = types[0].FullName;
+            }
+
+            int selectedIndex = types.FindIndex(t => t.FullName == property.stringValue);
+            EditorGUILayout.BeginHorizontal();
+            GUILayout.Label(label, GUILayout.Width(50));
+            selectedIndex = EditorGUILayout.Popup(selectedIndex, typeNames.ToArray(), GUILayout.Width(width - 50));
+            property.stringValue = types[selectedIndex].FullName;
+            EditorGUILayout.EndHorizontal();
+        }
+
         private void DrawDefaultInspectorExcept(string[] propertyNamesToExclude)
         {
             SerializedProperty property = serializedObject.GetIterator();
             property.NextVisible(true);
             do
             {
-                if (System.Array.IndexOf(propertyNamesToExclude, property.name) < 0)
+                if (Array.IndexOf(propertyNamesToExclude, property.name) < 0)
                 {
                     EditorGUILayout.PropertyField(property, true);
                 }
@@ -210,8 +289,8 @@ namespace AdvancedPS.Editor
                 if (property.propertyType == SerializedPropertyType.Boolean)
                 {
                     EditorGUILayout.BeginHorizontal();
-                    EditorGUILayout.LabelField(property.displayName, GUILayout.Width(150));
-                    property.boolValue = EditorGUILayout.Toggle(property.boolValue);
+                    property.boolValue = EditorGUILayout.Toggle(property.boolValue, GUILayout.Width(15));
+                    EditorGUILayout.LabelField(property.displayName, GUILayout.Width(100));
                     EditorGUILayout.EndHorizontal();
                 }
             }
