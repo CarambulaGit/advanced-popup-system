@@ -77,7 +77,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show the popup.
         /// </summary>
-        public override Operation Show(DefaultSettings settings = null)
+        public override Operation Show(BaseSettings settings = null)
         {
             if (IsBeVisible) return new Operation(token => null);
             
@@ -86,7 +86,7 @@ namespace AdvancedPS.Core
                 await ShowAsync(token, settings);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task ShowAsync(CancellationToken token = default, DefaultSettings settings = null)
+        public override async Task ShowAsync(CancellationToken token = default, BaseSettings settings = null)
         {
             if (IsBeVisible) return;
             IsBeVisible = true;
@@ -111,7 +111,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show the popup with a specific display type.
         /// </summary>
-        public override Operation Show<T>(DefaultSettings settings = null)
+        public override Operation Show<T>(BaseSettings settings = null)
         {
             if (IsBeVisible) return new Operation(token => null);
             
@@ -120,7 +120,7 @@ namespace AdvancedPS.Core
                 await ShowAsync<T>(token, settings);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task ShowAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public override async Task ShowAsync<T>(CancellationToken token = default, BaseSettings settings = null)
         {
             if (IsBeVisible) return;
             IsBeVisible = true;
@@ -146,7 +146,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide the popup.
         /// </summary>
-        public override Operation Hide(DefaultSettings settings = null)
+        public override Operation Hide(BaseSettings settings = null)
         {
             if (!IsBeVisible) return new Operation(token => null);
             
@@ -155,17 +155,17 @@ namespace AdvancedPS.Core
                 await HideAsync(token, settings);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task HideAsync(CancellationToken token = default, DefaultSettings settings = null)
+        public override async Task HideAsync(CancellationToken token = default, BaseSettings settings = null)
         {
             if (!IsBeVisible) return;
             IsBeVisible = false;
             
             if (token == default)
                 UpdateCancellationTokenSource();
-
+            
             List<Task> tasks = new List<Task>
             {
-                CachedShowDisplay.HideMethod(RootTransform, settings ??= CachedHideSettings, token)
+                CachedHideDisplay.HideMethod(RootTransform, settings ??= CachedHideSettings, token)
             };
             
             tasks.AddRange(DeepPopups.Select(popup => popup.HideAsync(token, settings)));
@@ -180,7 +180,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide the popup with a specific display type.
         /// </summary>
-        public override Operation Hide<T>(DefaultSettings settings = null)
+        public override Operation Hide<T>(BaseSettings settings = null)
         {
             if (!IsBeVisible) return new Operation(token => null);
             
@@ -189,7 +189,7 @@ namespace AdvancedPS.Core
                 await HideAsync<T>(token, settings);
             }, UpdateCancellationTokenSource());
         }
-        public override async Task HideAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public override async Task HideAsync<T>(CancellationToken token = default, BaseSettings settings = null)
         {
             if (!IsBeVisible) return;
             IsBeVisible = false;

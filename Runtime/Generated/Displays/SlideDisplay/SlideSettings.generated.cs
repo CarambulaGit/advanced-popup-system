@@ -1,9 +1,11 @@
-﻿using AdvancedPS.Core.System;
+﻿using System;
+using AdvancedPS.Core.System;
 using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class SlideSettings : DefaultSettings
+    [Serializable]
+    public class SlideSettings : BaseSettings
     {
         /// <summary>
         /// From witch side popup will start move.
@@ -14,6 +16,9 @@ namespace AdvancedPS.Core
         /// </summary>
         public Vector3 TargetPosition { get; set; }
 
+        /// <summary>
+        /// Setting default values.
+        /// </summary>
         public SlideSettings()
         {
             Duration = 0.75f;

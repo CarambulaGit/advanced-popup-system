@@ -8,7 +8,14 @@ namespace AdvancedPS.Core
 {
     public class FadeDisplay : IDisplay
     {
-        public async Task ShowMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Logic for popup showing animation.
+        /// </summary>
+        /// <param name="transform"> RectTransform of root popup GameObject. </param>
+        /// <param name="settings"> The settings for the animation. If null, the default settings will be used. </param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task ShowMethod(RectTransform transform, BaseSettings settings, CancellationToken cancellationToken = default)
         {
             FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -37,7 +44,14 @@ namespace AdvancedPS.Core
             settingsLocal.OnAnimationEnd?.Invoke();
         }
 
-        public async Task HideMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Logic for popup hiding animation.
+        /// </summary>
+        /// <param name="transform"> RectTransform of root popup GameObject. </param>
+        /// <param name="settings"> The settings for the animation. If null, the default settings will be used. </param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task HideMethod(RectTransform transform, BaseSettings settings, CancellationToken cancellationToken = default)
         {
             FadeSettings settingsLocal = settings as FadeSettings; 
             CanvasGroup canvasGroup = GetCanvasGroup(transform);

@@ -50,6 +50,11 @@ namespace AdvancedPS.Core.System
                 string displayType = display + "Display";
                 string settingsType = display + "Settings";
 
+                sb.AppendLine("        /// <summary>");
+                sb.AppendLine("        /// Show/Add popup with the specified layer without hiding the rest layers by CachedDisplay type.");
+                sb.AppendLine("        /// </summary>");
+                sb.AppendLine("        /// <param name=\"layer\">The layer to show popup for.</param>");
+                sb.AppendLine("        /// <param name=\"settings\"> The settings for the animation. If not provided, the default settings will be used. </param>");
                 sb.AppendLine(
                     $"        public static Operation PopupShow<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
                 sb.AppendLine("        {");
@@ -65,6 +70,11 @@ namespace AdvancedPS.Core.System
                 string displayType = display + "Display";
                 string settingsType = display + "Settings";
 
+                sb.AppendLine("        /// <summary>");
+                sb.AppendLine("        /// Hide/Remove popup with the specified layer without hiding the rest layers by CachedDisplay type.");
+                sb.AppendLine("        /// </summary>");
+                sb.AppendLine("        /// <param name=\"layer\">The layer to show popup for.</param>");
+                sb.AppendLine("        /// <param name=\"settings\"> The settings for the animation. If not provided, the default settings will be used. </param>");
                 sb.AppendLine(
                     $"        public static Operation PopupHide<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
                 sb.AppendLine("        {");
@@ -80,6 +90,11 @@ namespace AdvancedPS.Core.System
                 string displayType = display + "Display";
                 string settingsType = display + "Settings";
 
+                sb.AppendLine("        /// <summary>");
+                sb.AppendLine("        /// Show all popups with the specified layer by CachedDisplay type.");
+                sb.AppendLine("        /// </summary>");
+                sb.AppendLine("        /// <param name=\"layer\">The layer to show popups for.</param>");
+                sb.AppendLine("        /// <param name=\"settings\"> The settings for the animation. If not provided, the default settings will be used. </param>");
                 sb.AppendLine(
                     $"        public static Operation LayerShow<T>(PopupLayerEnum layer, {settingsType} settings = null) where T : {displayType}, new()");
                 sb.AppendLine("        {");
@@ -91,6 +106,12 @@ namespace AdvancedPS.Core.System
                     string displayTypeSecond = dependencySecond + "Display";
                     string settingsTypeSecond = dependencySecond + "Settings";
 
+                    sb.AppendLine("        /// <summary>");
+                    sb.AppendLine("        /// Show all popups with the specified layer by IAdvancedPopupDisplay generic T type for all popups.");
+                    sb.AppendLine("        /// </summary>");
+                    sb.AppendLine("        /// <param name=\"layer\">The layer to show popups for.</param>");
+                    sb.AppendLine("        /// <param name=\"showSettings\"> The settings for the open popup animation. If not provided, the default settings will be used. </param>");
+                    sb.AppendLine("        /// <param name=\"hideSettings\"> The settings for the open hide animation. If not provided, the default settings will be used. </param>");
                     sb.AppendLine(
                         $"        public static Operation LayerShow<T,J>(PopupLayerEnum layer, {settingsType} showSettings = null, {settingsTypeSecond} hideSettings = null) where T : {displayType}, new() where J : {displayTypeSecond}, new()");
                     sb.AppendLine("        {");
@@ -107,6 +128,10 @@ namespace AdvancedPS.Core.System
                 string displayType = display + "Display";
                 string settingsType = display + "Settings";
 
+                sb.AppendLine("        /// <summary>");
+                sb.AppendLine("        /// Hide all popups by IAdvancedPopupDisplay generic T type for all popups.");
+                sb.AppendLine("        /// </summary>");
+                sb.AppendLine("        /// <param name=\"settings\"> The settings for the animation. If not provided, the default settings will be used. </param>");
                 sb.AppendLine(
                     $"        public static Operation HideAll<T>({settingsType} settings = null) where T : {displayType}, new()");
                 sb.AppendLine("        {");

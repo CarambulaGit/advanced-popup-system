@@ -18,6 +18,19 @@ namespace AdvancedPS.Core.Utils
             return Type.GetType(settingsClassName);
         }
         
+        public static Type GetTypeByFullName(string typeFullName)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .FirstOrDefault(type => type.FullName == typeFullName);
+        }
+        public static Type GetTypeByName(string typeName)
+        {
+            return AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(assembly => assembly.GetTypes())
+                .FirstOrDefault(type => type.Name == typeName);
+        }
+        
         public static string RemoveDisplaySuffix(string input)
         {
             string[] suffixes =

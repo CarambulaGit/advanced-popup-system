@@ -1,8 +1,10 @@
-﻿using AdvancedPS.Core.System;
+﻿using System;
+using AdvancedPS.Core.System;
 
 namespace AdvancedPS.Core
 {
-    public class FadeSettings : DefaultSettings
+    [Serializable]
+    public class FadeSettings : BaseSettings
     {
         /// <summary>
         /// Target alpha of CanvasGroup on shown.
@@ -13,6 +15,9 @@ namespace AdvancedPS.Core
         /// </summary>
         public float MinValue { get; set; }
 
+        /// <summary>
+        /// Setting default values.
+        /// </summary>
         public FadeSettings()
         {
             Duration = 0.5f;

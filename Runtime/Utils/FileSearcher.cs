@@ -46,7 +46,7 @@ namespace AdvancedPS.Core.Utils
             string settingsFilePath = Path.Combine(settingsFolderPath, SettingsFileName);
             if (!File.Exists(settingsFilePath))
             {
-                GenerateDefaultSettingsFile(settingsFilePath);
+                GenerateBaseSettingsFile(settingsFilePath);
             }
 
             return settingsFilePath;
@@ -132,15 +132,15 @@ namespace AdvancedPS.Core.Utils
 #endif
         }
         
-        private static void GenerateDefaultSettingsFile(string path)
+        private static void GenerateBaseSettingsFile(string path)
         {
-            var defaultSettings = new PopupSettings
+            var baseSettings = new PopupSettings
             {
                 CustomIconsEnabled = true,
                 LogType = "Error"
             };
 
-            File.WriteAllText(path, JsonConvert.SerializeObject(defaultSettings));
+            File.WriteAllText(path, JsonConvert.SerializeObject(baseSettings));
 #if UNITY_EDITOR
             UnityEditor.AssetDatabase.Refresh();
 #endif

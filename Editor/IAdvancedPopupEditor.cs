@@ -88,7 +88,7 @@ namespace AdvancedPS.Editor
             
             serializedObject.Update();
             
-            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
+            EditorGUILayout.BeginVertical(APSEditorStyles.DarkBackgroundStyle);
             EditorGUILayout.BeginHorizontal();
             SerializedProperty popupLayerProperty = serializedObject.FindProperty("PopupLayer");
             EditorGUILayout.PropertyField(popupLayerProperty, new GUIContent("Popup Layer"));
@@ -134,7 +134,7 @@ namespace AdvancedPS.Editor
             DrawDefaultInspectorExcept(new string[]
             {
                 "PopupLayer", "m_Script", "DeepPopups", "inspectorShowDisplay", "inspectorHideDisplay",
-                "HotKeyShow", "HotKeyHide", "CachedShowSettings", "CachedHideSettings"
+                "HotKeyShow", "HotKeyHide", "cachedShowSettings", "cachedHideSettings"
             }.Concat(GetBoolPropertyNames()).ToArray());
 
             serializedObject.ApplyModifiedProperties();
@@ -157,7 +157,7 @@ namespace AdvancedPS.Editor
             
             var popup = (IAdvancedPopup)target;
             bool wasActive = popup.gameObject.activeSelf;
-            bool wasVisible = popup.GetComponent<CanvasGroup>().alpha != 0;
+            bool wasVisible = popup.GetComponent<CanvasGroup>().alpha != 0 && popup.transform.localScale != Vector3.zero;
             
             if (!wasActive)
                 popup.gameObject.SetActive(true);
@@ -166,11 +166,15 @@ namespace AdvancedPS.Editor
 
             if (wasVisible)
             {
+                popup.IsBeVisible = true;
+                popup.IsVisible = true;
                 await (Task)hideMethod.Invoke(target, new object[] { default, null });
                 await (Task)showMethod.Invoke(target, new object[] { default, null });
             }
             else
             {
+                popup.IsBeVisible = false;
+                popup.IsVisible = false;
                 await (Task)showMethod.Invoke(target, new object[] { default, null });
                 await (Task)hideMethod.Invoke(target, new object[] { default, null });
             }
@@ -193,13 +197,16 @@ namespace AdvancedPS.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
-            GUILayout.Space(20);
+            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyShow"), new GUIContent("Show Key"), GUILayout.Width(width));
             GUILayout.Space(5);
-            DrawTypeDropdown("inspectorShowDisplay", "Display:", typeof(IDisplay), width);
+            DrawTypeDropdown("inspectorShowDisplay", "Display:", typeof(IDisplay), width, "cachedShowSettings");
+            EditorGUILayout.EndVertical();
             GUILayout.Space(5);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("CachedShowSettings"), new GUIContent("Display Settings"), GUILayout.Width(width));
-            GUILayout.Space(20);
+            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedShowSettings"), new GUIContent("Display Settings"), true, GUILayout.Width(width));
+            GUILayout.Space(15);
+            EditorGUILayout.EndVertical();
             GUILayout.EndVertical();
             
             EditorGUILayoutExtensions.DrawVerticalLine();
@@ -212,20 +219,23 @@ namespace AdvancedPS.Editor
             GUILayout.FlexibleSpace();
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
-            GUILayout.Space(20);
+            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyHide"), new GUIContent("Hide Key"), GUILayout.Width(width));
             GUILayout.Space(5);
-            DrawTypeDropdown("inspectorHideDisplay", "Display:", typeof(IDisplay), width);
+            DrawTypeDropdown("inspectorHideDisplay", "Display:", typeof(IDisplay), width, "cachedHideSettings");
+            EditorGUILayout.EndVertical();
             GUILayout.Space(5);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("CachedHideSettings"), new GUIContent("Display Settings"), GUILayout.Width(width));
-            GUILayout.Space(20);
+            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedHideSettings"), new GUIContent("Display Settings"), true, GUILayout.Width(width));
+            GUILayout.Space(15);
+            EditorGUILayout.EndVertical();
             GUILayout.EndVertical();
             
             GUILayout.EndHorizontal();
             EditorGUILayoutExtensions.DrawHorizontalLine();
         }
 
-        private void DrawTypeDropdown(string propertyName, string label, Type baseType, float width)
+        private void DrawTypeDropdown(string propertyName, string label, Type baseType, float width, string settingsProperty)
         {
             var property = serializedObject.FindProperty(propertyName);
             if (property == null)
@@ -247,13 +257,40 @@ namespace AdvancedPS.Editor
             {
                 property.stringValue = types[0].FullName;
             }
-
+            var popup = (IAdvancedPopup)serializedObject.targetObject;
             int selectedIndex = types.FindIndex(t => t.FullName == property.stringValue);
             EditorGUILayout.BeginHorizontal();
             GUILayout.Label(label, GUILayout.Width(50));
-            selectedIndex = EditorGUILayout.Popup(selectedIndex, typeNames.ToArray(), GUILayout.Width(width - 50));
-            property.stringValue = types[selectedIndex].FullName;
+            EditorGUI.BeginChangeCheck();
+            int newSelectedIndex = EditorGUILayout.Popup(selectedIndex, typeNames.ToArray(), GUILayout.Width(width - 50));
+            if (EditorGUI.EndChangeCheck() && newSelectedIndex != selectedIndex)
+            {
+                property.stringValue = types[newSelectedIndex].FullName;
+                serializedObject.ApplyModifiedProperties();
+                // Update settings based on new display type
+                UpdateCachedSettings(popup, propertyName, settingsProperty);
+                // Invoke SetCachedDisplayFromString with the updated values
+                popup.SetCachedDisplayFromString();
+            }
+            else
+            {
+                property.stringValue = types[selectedIndex].FullName;
+            }
             EditorGUILayout.EndHorizontal();
+        }
+        
+        private void UpdateCachedSettings(IAdvancedPopup popup, string displayProperty, string settingsProperty)
+        {
+            SerializedProperty displayProp = serializedObject.FindProperty(displayProperty);
+            SerializedProperty settingsProp = serializedObject.FindProperty(settingsProperty);
+
+            Type displayType = Type.GetType(displayProp.stringValue);
+            if (displayType != null)
+            {
+                Type settingsType = TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(displayType.Name) + "Settings");
+                settingsProp.managedReferenceValue = Activator.CreateInstance(settingsType);
+                serializedObject.ApplyModifiedProperties();
+            }
         }
 
         private void DrawDefaultInspectorExcept(string[] propertyNamesToExclude)

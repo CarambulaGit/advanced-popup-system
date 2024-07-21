@@ -10,6 +10,7 @@ namespace AdvancedPS.Editor.Styles
         public static readonly GUIStyle ScrollViewStyle;
         public static readonly GUIStyle BoldButtonStyle;
         public static readonly GUIStyle ExperimentalButtonStyle;
+        public static readonly GUIStyle DarkBackgroundStyle;
         public static readonly GUIStyle BackgroundStyle;
         public static readonly GUIStyle LineStyle;
         
@@ -28,6 +29,10 @@ namespace AdvancedPS.Editor.Styles
             normalTexture.SetPixel(0, 0, Color.gray);
             normalTexture.Apply();
             
+            Texture2D normalTextureInspector = new Texture2D(1, 1);
+            normalTextureInspector.SetPixel(0, 0, new Color(0.23f, 0.23f, 0.23f, 1f));
+            normalTextureInspector.Apply();
+            
             Texture2D backgroundTexture = new Texture2D(1, 1);
             backgroundTexture.SetPixel(0, 0, new Color(0.19f, 0.19f, 0.19f, 1f));
             backgroundTexture.Apply();
@@ -39,6 +44,15 @@ namespace AdvancedPS.Editor.Styles
             };
             
             BackgroundStyle = new GUIStyle
+            {
+                normal =
+                {
+                    background = normalTextureInspector
+                },
+                padding = new RectOffset(5, 0, 5, 5)
+            };
+            
+            DarkBackgroundStyle = new GUIStyle
             {
                 normal =
                 {

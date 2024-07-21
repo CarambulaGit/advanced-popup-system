@@ -1,9 +1,11 @@
-﻿using AdvancedPS.Core.System;
+﻿using System;
+using AdvancedPS.Core.System;
 using UnityEngine;
 
 namespace AdvancedPS.Core
 {
-    public class ScaleSettings : DefaultSettings
+    [Serializable]
+    public class ScaleSettings : BaseSettings
     {
         /// <summary>
         /// Target scale of GameObject on shown.
@@ -14,6 +16,9 @@ namespace AdvancedPS.Core
         /// </summary>
         public Vector3 HideScale { get; set; }
         
+        /// <summary>
+        /// Setting default values.
+        /// </summary>
         public ScaleSettings()
         {
             Duration = 0.5f;

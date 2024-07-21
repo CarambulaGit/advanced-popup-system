@@ -56,23 +56,33 @@ namespace AdvancedPS.Core.System
         
         #region Protected
         /// <summary>
-        /// Cached method for the showing animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
+        /// Cached method for the showing animation. To change it by call 'AdvancedPopupSystem.SetCachedDisplay'.
         /// </summary>
         protected IDisplay CachedShowDisplay { get; private set; }
         /// <summary>
-        /// Cached method for the hiding animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
+        /// Cached method for the hiding animation. To change it by call 'AdvancedPopupSystem.SetCachedDisplay'.
         /// </summary>
         protected IDisplay CachedHideDisplay { get; private set; }
-
+        
+        [SerializeField] private BaseSettings cachedShowSettings = new ScaleSettings();
         /// <summary>
-        /// Cached settings for the showing animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
+        /// Cached settings for the showing animation. To change it by call 'AdvancedPopupSystem.SetCachedDisplay'.
         /// </summary>
-        [SerializeField] protected DefaultSettings CachedShowSettings;
-
+        public BaseSettings CachedShowSettings
+        {
+            get => cachedShowSettings;
+            private set => cachedShowSettings = value;
+        }
+        
+        [SerializeField] private BaseSettings cachedHideSettings = new ScaleSettings();
         /// <summary>
-        /// Cached settings for the hiding animation. To change it by call 'AdvancedPopupSystem.GetDisplay'.
+        /// Cached settings for the hiding animation. To change it by call 'AdvancedPopupSystem.SetCachedDisplay'.
         /// </summary>
-        [SerializeField] protected DefaultSettings CachedHideSettings;
+        public BaseSettings CachedHideSettings
+        {
+            get => cachedHideSettings;
+            private set => cachedHideSettings = value;
+        }
         #endregion
         
         #region Private
@@ -98,7 +108,7 @@ namespace AdvancedPS.Core.System
         public virtual void Init()
         {
             if (string.IsNullOrEmpty(inspectorHideDisplay) || string.IsNullOrEmpty(inspectorHideDisplay) 
-                                                           || !SetCachedDisplayFromString(inspectorShowDisplay, inspectorHideDisplay))
+                                                           || !SetCachedDisplayFromString())
             {
                 SetCachedDisplay<ScaleDisplay, ScaleDisplay>();
             }
@@ -125,8 +135,10 @@ namespace AdvancedPS.Core.System
         /// </summary>
         /// <typeparam name="T">The type of advanced popup display to create and show cache.</typeparam>
         /// <param name="showSettings">The settings for the showing animation. If not provided, the default settings will be used.</param>
-        public void SetCachedDisplay<T>(DefaultSettings showSettings) where T : IDisplay, new()
+        public void SetCachedDisplay<T>(BaseSettings showSettings = null) where T : IDisplay, new()
         {
+            showSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(T).Name) + "Settings"));
+            
             CachedShowDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedShowSettings = showSettings;
         }
@@ -139,27 +151,30 @@ namespace AdvancedPS.Core.System
         /// <typeparam name="J">The type of advanced popup display to create and hide cache.</typeparam>
         /// <param name="showSettings">The settings for the showing animation. If not provided, the default settings will be used.</param>
         /// <param name="hideSettings">The settings for the hiding animation. If not provided, the default settings will be used.</param>
-        public void SetCachedDisplay<T,J>(DefaultSettings showSettings = null, DefaultSettings hideSettings = null) where T : IDisplay, new() where J : IDisplay, new()
+        public void SetCachedDisplay<T,J>(BaseSettings showSettings = null, BaseSettings hideSettings = null) where T : IDisplay, new() where J : IDisplay, new()
         {
+            showSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(T).Name) + "Settings"));
+            hideSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(J).Name) + "Settings"));
+            
             CachedShowDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedShowSettings = showSettings;
             CachedHideDisplay = AdvancedPopupSystem.GetDisplay<J>();
             CachedHideSettings = hideSettings;
         }
         
-        public bool SetCachedDisplayFromString(string showTypeName, string hideTypeName)
+        public bool SetCachedDisplayFromString()
         {
-            Type showDisplayType = Type.GetType(showTypeName);
-            Type hideDisplayType = Type.GetType(hideTypeName);
+            Type showDisplayType = Type.GetType(inspectorShowDisplay);
+            Type hideDisplayType = Type.GetType(inspectorHideDisplay);
 
             if (showDisplayType == null)
             {
-                Debug.LogWarning($"Show type {showTypeName} not found.");
+                Debug.LogWarning($"Show type {inspectorShowDisplay} not found.");
                 return false;
             }
             if (hideDisplayType == null)
             {
-                Debug.LogWarning($"Hide type {hideTypeName} not found.");
+                Debug.LogWarning($"Hide type {inspectorHideDisplay} not found.");
                 return false;
             }
 
@@ -172,9 +187,12 @@ namespace AdvancedPS.Core.System
                 Debug.LogWarning($"Method {nameof(SetCachedDisplay)} not found or ambiguous in {typeof(IAdvancedPopup)}");
                 return false;
             }
-            //MethodInfo genericMethod = method.MakeGenericMethod(showType, hideType);
-
-            //genericMethod.Invoke(this, new object[] { CachedShowSettings, CachedHideSettings });
+            MethodInfo genericMethod = method.MakeGenericMethod(showDisplayType, hideDisplayType);
+            
+            CachedShowSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(showDisplayType.Name) + "Settings"));
+            CachedHideSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(hideDisplayType.Name) + "Settings"));
+            
+            genericMethod.Invoke(this, new object[] { CachedShowSettings, CachedHideSettings });
             return true;
         }
 
@@ -192,26 +210,26 @@ namespace AdvancedPS.Core.System
         /// Show popup by CachedDisplay type without await.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Operation Show(DefaultSettings settings = null);
+        public abstract Operation Show(BaseSettings settings = null);
         /// <summary>
         /// Show popup by CachedDisplay type.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Task ShowAsync(CancellationToken token = default, DefaultSettings settings = null);
+        public abstract Task ShowAsync(CancellationToken token = default, BaseSettings settings = null);
 
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for all popup's without await.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Operation Show<T>(DefaultSettings settings = null)
+        public abstract Operation Show<T>(BaseSettings settings = null)
             where T : IDisplay, new();
         /// <summary>
         /// Show popup by IAdvancedPopupDisplay generic T type for all popup's.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Task ShowAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public abstract Task ShowAsync<T>(CancellationToken token = default, BaseSettings settings = null)
             where T : IDisplay, new();
         #endregion
 
@@ -221,19 +239,19 @@ namespace AdvancedPS.Core.System
         /// Hide popup by CachedDisplay type without await.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Operation Hide(DefaultSettings settings = null);
+        public abstract Operation Hide(BaseSettings settings = null);
         /// <summary>
         /// Hide popup by CachedDisplay type.
         /// </summary>
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Task HideAsync(CancellationToken token = default, DefaultSettings settings = null);
+        public abstract Task HideAsync(CancellationToken token = default, BaseSettings settings = null);
         
         /// <summary>
         /// Hide popup by IAdvancedPopupDisplay generic T type for all popup's without await.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Operation Hide<T>(DefaultSettings settings = null)
+        public abstract Operation Hide<T>(BaseSettings settings = null)
             where T : IDisplay, new();
 
         /// <summary>
@@ -241,7 +259,7 @@ namespace AdvancedPS.Core.System
         /// </summary>
         /// <param name="token"></param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        public abstract Task HideAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public abstract Task HideAsync<T>(CancellationToken token = default, BaseSettings settings = null)
             where T : IDisplay, new();
         #endregion
         

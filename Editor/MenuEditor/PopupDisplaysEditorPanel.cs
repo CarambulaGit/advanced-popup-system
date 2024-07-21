@@ -146,7 +146,7 @@ namespace AdvancedPS.Editor
 
                 string displayClass = displayName + "Display";
         
-                if (Type.GetType($"AdvancedPS.Core.{displayClass}") == null)
+                if (TypeHelper.GetTypeByName(displayClass) == null)
                 {
                     CreateDisplayAndSettingsFiles(displayName);
                 }
@@ -196,7 +196,14 @@ namespace AdvancedPS.Core
 {{
     public class {className} : IDisplay
     {{
-        public Task ShowMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Logic for popup showing animation.
+        /// </summary>
+        /// <param name=""transform""> RectTransform of root popup GameObject. </param>
+        /// <param name=""settings""> The settings for the animation. If null, the default settings will be used. </param>
+        /// <param name=""cancellationToken""></param>
+        /// <returns></returns>
+        public Task ShowMethod(RectTransform transform, BaseSettings settings, CancellationToken cancellationToken = default)
         {{
             {settingsName} settingsLocal = settings as {settingsName};
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -204,7 +211,14 @@ namespace AdvancedPS.Core
             return Task.CompletedTask;
         }}
         
-        public Task HideMethod(RectTransform transform, DefaultSettings settings, CancellationToken cancellationToken = default)
+        /// <summary>
+        /// Logic for popup hiding animation.
+        /// </summary>
+        /// <param name=""transform""> RectTransform of root popup GameObject. </param>
+        /// <param name=""settings""> The settings for the animation. If null, the default settings will be used. </param>
+        /// <param name=""cancellationToken""></param>
+        /// <returns></returns> 
+        public Task HideMethod(RectTransform transform, BaseSettings settings, CancellationToken cancellationToken = default)
         {{
             {settingsName} settingsLocal = settings as {settingsName};
             CanvasGroup canvasGroup = GetCanvasGroup(transform);
@@ -240,8 +254,11 @@ using AdvancedPS.Core.System;
 namespace AdvancedPS.Core
 {{
     [Serializable]
-    public class {className} : DefaultSettings
+    public class {className} : BaseSettings
     {{
+        /// <summary>
+        /// Setting default values.
+        /// </summary>
         public {className}()
         {{
         }}

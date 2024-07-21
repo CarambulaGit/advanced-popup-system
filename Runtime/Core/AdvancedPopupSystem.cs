@@ -121,7 +121,7 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        private static Operation PopupShowGeneric<T>(PopupLayerEnum layer, DefaultSettings settings = null) where T : IDisplay, new()
+        private static Operation PopupShowGeneric<T>(PopupLayerEnum layer, BaseSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -164,11 +164,11 @@ namespace AdvancedPS.Core
         }
 
         /// <summary>
-        /// Show/Add popup with the specified layer without hiding the rest layers by CachedDisplay type.
+        /// Hide/Remove popup with the specified layer without hiding the rest layers by CachedDisplay type.
         /// </summary>
         /// <param name="layer">The layer to show popup for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        private static Operation PopupHideGeneric<T>(PopupLayerEnum layer, DefaultSettings settings = null) where T : IDisplay, new()
+        private static Operation PopupHideGeneric<T>(PopupLayerEnum layer, BaseSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -218,7 +218,7 @@ namespace AdvancedPS.Core
         /// </summary>
         /// <param name="layer">The layer to show popups for.</param>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        private static Operation LayerShowGeneric<T>(PopupLayerEnum layer, DefaultSettings settings = null) where T : IDisplay, new()
+        private static Operation LayerShowGeneric<T>(PopupLayerEnum layer, BaseSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -244,7 +244,7 @@ namespace AdvancedPS.Core
         /// <param name="layer">The layer to show popups for.</param>
         /// <param name="showSettings"> The settings for the open popup animation. If not provided, the default settings will be used. </param>
         /// <param name="hideSettings"> The settings for the open hide animation. If not provided, the default settings will be used. </param>
-        private static Operation LayerShowGeneric<T, J>(PopupLayerEnum layer, DefaultSettings showSettings = null, DefaultSettings hideSettings = null)
+        private static Operation LayerShowGeneric<T, J>(PopupLayerEnum layer, BaseSettings showSettings = null, BaseSettings hideSettings = null)
             where T : IDisplay, new() where J : IDisplay, new()
         {
             return new Operation(async token =>
@@ -291,7 +291,7 @@ namespace AdvancedPS.Core
         /// Hide all popups by IAdvancedPopupDisplay generic T type for all popups.
         /// </summary>
         /// <param name="settings"> The settings for the animation. If not provided, the default settings will be used. </param>
-        private static Operation HideAllGeneric<T>(DefaultSettings settings = null) where T : IDisplay, new()
+        private static Operation HideAllGeneric<T>(BaseSettings settings = null) where T : IDisplay, new()
         {
             return new Operation(async token =>
             {
@@ -335,7 +335,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show popups with specified display type.
         /// </summary>
-        private static async Task ShowPopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, DefaultSettings settings)
+        private static async Task ShowPopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, BaseSettings settings)
         {
             List<Task> tasks = popups.Select(popup => popup.ShowAsync(token, settings)).ToList();
             if (tasks.Count > 0)
@@ -345,7 +345,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Show popups with specified display type.
         /// </summary>
-        private static async Task ShowPopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, DefaultSettings settings) 
+        private static async Task ShowPopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, BaseSettings settings) 
             where T : IDisplay, new()
         {
             List<Task> tasks = popups.Select(popup => popup.ShowAsync<T>(token, settings)).ToList();
@@ -356,7 +356,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, DefaultSettings settings)
+        private static async Task HidePopupsAsync(CancellationToken token, IEnumerable<IAdvancedPopup> popups, BaseSettings settings)
         {
             List<Task> tasks = popups.Select(popup => popup.HideAsync(token, settings)).ToList();
             if (tasks.Count > 0)
@@ -366,7 +366,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide popups with specified display type.
         /// </summary>
-        private static async Task HidePopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, DefaultSettings settings) 
+        private static async Task HidePopupsAsync<T>(CancellationToken token, IEnumerable<IAdvancedPopup> popups, BaseSettings settings) 
             where T : IDisplay, new()
         {
             List<Task> tasks = popups.Select(popup => popup.HideAsync<T>(token, settings)).ToList();
@@ -377,7 +377,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide all popups.
         /// </summary>
-        private static async Task HideAllPopupsAsync(CancellationToken token, DefaultSettings settings)
+        private static async Task HideAllPopupsAsync(CancellationToken token, BaseSettings settings)
         {
             List<Task> tasks = AllPopups.Select(popup => popup.HideAsync(token, settings)).ToList();
             if (tasks.Count > 0)
@@ -387,7 +387,7 @@ namespace AdvancedPS.Core
         /// <summary>
         /// Hide all popups.
         /// </summary>
-        private static async Task HideAllPopupsAsync<T>(CancellationToken token, DefaultSettings settings) 
+        private static async Task HideAllPopupsAsync<T>(CancellationToken token, BaseSettings settings) 
             where T : IDisplay, new()
         {
             List<Task> tasks = AllPopups.Select(popup => popup.HideAsync<T>(token, settings)).ToList();

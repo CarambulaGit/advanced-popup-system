@@ -6,42 +6,42 @@ namespace AdvancedPS.Core
 {
     public class AdvancedPopupInstantiate : IAdvancedPopup
     {
-        public override Operation Show(DefaultSettings settings = null)
+        public override Operation Show(BaseSettings settings = null)
         {
             return null;
         }
 
-        public override Task ShowAsync(CancellationToken token = default, DefaultSettings settings = null)
+        public override Task ShowAsync(CancellationToken token = default, BaseSettings settings = null)
         {
             return Task.CompletedTask;
         }
 
-        public override Operation Show<T>(DefaultSettings settings = null)
+        public override Operation Show<T>(BaseSettings settings = null)
         {
             return null;
         }
 
-        public override Task ShowAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public override Task ShowAsync<T>(CancellationToken token = default, BaseSettings settings = null)
         {
             return Task.CompletedTask;
         }
 
-        public override Operation Hide(DefaultSettings settings = null)
+        public override Operation Hide(BaseSettings settings = null)
         {
             return null;
         }
 
-        public override Task HideAsync(CancellationToken token = default, DefaultSettings settings = null)
+        public override Task HideAsync(CancellationToken token = default, BaseSettings settings = null)
         {
             return Task.CompletedTask;
         }
 
-        public override Operation Hide<T>(DefaultSettings settings = null)
+        public override Operation Hide<T>(BaseSettings settings = null)
         {
             return null;
         }
 
-        public override Task HideAsync<T>(CancellationToken token = default, DefaultSettings settings = null)
+        public override Task HideAsync<T>(CancellationToken token = default, BaseSettings settings = null)
         {
             return Task.CompletedTask;
         }
