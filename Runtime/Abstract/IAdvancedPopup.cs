@@ -6,11 +6,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using AdvancedPS.Core.Utils;
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace AdvancedPS.Core.System
 {
-    public abstract class IAdvancedPopup : MonoBehaviour
+    public abstract partial class IAdvancedPopup : MonoBehaviour
     {
         #region Public
         /// <summary>
@@ -107,11 +106,12 @@ namespace AdvancedPS.Core.System
         /// </summary>
         public virtual void Init()
         {
-            if (string.IsNullOrEmpty(inspectorHideDisplay) || string.IsNullOrEmpty(inspectorHideDisplay) 
-                                                           || !SetCachedDisplayFromString())
-            {
-                SetCachedDisplay<ScaleDisplay, ScaleDisplay>();
-            }
+            //if (string.IsNullOrEmpty(inspectorHideDisplay) || string.IsNullOrEmpty(inspectorHideDisplay) 
+            //                                               || !SetCachedDisplayFromString())
+            //{
+            //    
+            //}
+            SetCachedDisplay<ScaleDisplay, ScaleDisplay>();
             
             if (RootTransform == null)
                 RootTransform = GetComponent<RectTransform>();
@@ -135,10 +135,8 @@ namespace AdvancedPS.Core.System
         /// </summary>
         /// <typeparam name="T">The type of advanced popup display to create and show cache.</typeparam>
         /// <param name="showSettings">The settings for the showing animation. If not provided, the default settings will be used.</param>
-        public void SetCachedDisplay<T>(BaseSettings showSettings = null) where T : IDisplay, new()
+        private void SetCachedDisplayInternal<T>(BaseSettings showSettings = null) where T : IDisplay, new()
         {
-            showSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(T).Name) + "Settings"));
-            
             CachedShowDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedShowSettings = showSettings;
         }
@@ -151,11 +149,8 @@ namespace AdvancedPS.Core.System
         /// <typeparam name="J">The type of advanced popup display to create and hide cache.</typeparam>
         /// <param name="showSettings">The settings for the showing animation. If not provided, the default settings will be used.</param>
         /// <param name="hideSettings">The settings for the hiding animation. If not provided, the default settings will be used.</param>
-        public void SetCachedDisplay<T,J>(BaseSettings showSettings = null, BaseSettings hideSettings = null) where T : IDisplay, new() where J : IDisplay, new()
+        private void SetCachedDisplayInternal<T,J>(BaseSettings showSettings = null, BaseSettings hideSettings = null) where T : IDisplay, new() where J : IDisplay, new()
         {
-            showSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(T).Name) + "Settings"));
-            hideSettings ??= (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(typeof(J).Name) + "Settings"));
-            
             CachedShowDisplay = AdvancedPopupSystem.GetDisplay<T>();
             CachedShowSettings = showSettings;
             CachedHideDisplay = AdvancedPopupSystem.GetDisplay<J>();

@@ -6,18 +6,24 @@ namespace AdvancedPS.Core.System
 {
     public static class APSCodeGenerator
     {
-        private const string ClassName = "AdvancedPopupSystem";
+        private const string SystemName = "AdvancedPopupSystem";
+        private const string PopupName = "IAdvancedPopup";
         
         public static void Execute(string[] displayNames)
         {
-            var code = GenerateMethodsForDisplay(ClassName, displayNames);
-            var path = $"Assets/advanced-popup-system/Runtime/Generated/{ClassName}.generated.cs";
-
+            string code = GenerateSystemMethodsForDisplay(SystemName, displayNames);
+            string path = $"Assets/advanced-popup-system/Runtime/Generated/{SystemName}.generated.cs";
             File.WriteAllText(path, code);
+            
+            code = GeneratePopupMethodsForDisplay(PopupName, displayNames);
+            path = $"Assets/advanced-popup-system/Runtime/Generated/{PopupName}.generated.cs";
+            File.WriteAllText(path, code);
+            
             AssetDatabase.Refresh();
         }
 
-        private static string GenerateMethodsForDisplay(string className, string[] displayNames)
+        #region System
+        private static string GenerateSystemMethodsForDisplay(string className, string[] displayNames)
         {
             var sb = new StringBuilder();
             sb.AppendLine("using AdvancedPS.Core.System;");
@@ -139,6 +145,64 @@ namespace AdvancedPS.Core.System
                 sb.AppendLine("        }");
             }
         }
+        #endregion
+        #region Popup
+        private static string GeneratePopupMethodsForDisplay(string className, string[] displayNames)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("namespace AdvancedPS.Core.System");
+            sb.AppendLine("{");
+            sb.AppendLine($"    public abstract partial class {className}");
+            sb.AppendLine("    {");
+            GenerateSetCachedDisplayGenericMethods(sb, displayNames);
+            sb.AppendLine("    }");
+            sb.AppendLine("}");
 
+            return sb.ToString();
+        }
+        
+        private static void GenerateSetCachedDisplayGenericMethods(StringBuilder sb, string[] displayNames)
+        {
+            foreach (string display in displayNames)
+            {
+                string displayType = display + "Display";
+                string settingsType = display + "Settings";
+
+                sb.AppendLine("        /// <summary>");
+                sb.AppendLine("        /// Sets the cached display to an instance of the specified advanced popup display type, initialized with the provided settings.");
+                sb.AppendLine("        /// </summary>");
+                sb.AppendLine("        /// <typeparam name=\"T\">The type of advanced popup display to create and show cache.</typeparam>");
+                sb.AppendLine("        /// <param name=\"showSettings\">The settings for the showing animation. If not provided, the default settings will be used.</param>");
+                sb.AppendLine($"        public void SetCachedDisplay<T>({settingsType} showSettings = null) where T : {displayType}, new()");
+                sb.AppendLine("        {");
+                sb.AppendLine("            if (showSettings == null)");
+                sb.AppendLine($"                showSettings = new {settingsType}();");
+                sb.AppendLine("            SetCachedDisplayInternal<T>(showSettings);");
+                sb.AppendLine("        }");
+
+                foreach (string dependencySecond in displayNames)
+                {
+                    string displayTypeSecond = dependencySecond + "Display";
+                    string settingsTypeSecond = dependencySecond + "Settings";
+
+                    sb.AppendLine("        /// <summary>");
+                    sb.AppendLine("        /// Sets the cached display to an instance of the specified advanced popup display type, initialized with the provided settings.");
+                    sb.AppendLine("        /// </summary>");
+                    sb.AppendLine("        /// <typeparam name=\"T\">The type of advanced popup display to create and show cache.</typeparam>");
+                    sb.AppendLine("        /// <typeparam name=\"J\">The type of advanced popup display to create and hide cache.</typeparam>");
+                    sb.AppendLine("        /// <param name=\"showSettings\">The settings for the showing animation. If not provided, the default settings will be used.</param>");
+                    sb.AppendLine("        /// <param name=\"hideSettings\">The settings for the hiding animation. If not provided, the default settings will be used.</param>");
+                    sb.AppendLine($"        public void SetCachedDisplay<T,J>({settingsType} showSettings = null, {settingsTypeSecond} hideSettings = null) where T : {displayType}, new() where J : {displayTypeSecond}, new()");
+                    sb.AppendLine("        {");
+                    sb.AppendLine("            if (showSettings == null)");
+                    sb.AppendLine($"                showSettings = new {settingsType}();");
+                    sb.AppendLine("            if (hideSettings == null)");
+                    sb.AppendLine($"                hideSettings = new {settingsTypeSecond}();");
+                    sb.AppendLine("            SetCachedDisplayInternal<T,J>(showSettings, hideSettings);");
+                    sb.AppendLine("        }");
+                }
+            }
+        }
+        #endregion
     }
 }

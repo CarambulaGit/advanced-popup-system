@@ -101,6 +101,8 @@ namespace AdvancedPS.Editor
             
             EditorGUILayout.BeginHorizontal();
             GUILayout.FlexibleSpace();
+            GUI.enabled = false;
+            isShowSettings = false;
             if (GUILayout.Button(isShowSettings ? "Hide settings" : "Show settings", GUILayout.Width(100)))
             {
                 isShowSettings = !isShowSettings;
@@ -112,23 +114,19 @@ namespace AdvancedPS.Editor
             {
                 ExperimentalShowHide();
             }
+            GUI.enabled = true;
             EditorGUILayout.EndHorizontal();
-            if (isShowSettings)
-            {
-                DrawPopupSettings();
-                GUILayout.BeginHorizontal();
-                GUILayout.FlexibleSpace();
-                GUILayout.Label("General Settings");
-                GUILayout.FlexibleSpace();
-                GUILayout.EndHorizontal();
-                EditorGUILayoutExtensions.DrawHorizontalLine();
-            }
-            else
-            {
-                EditorGUILayoutExtensions.DrawHorizontalLine();
-            }
-            DrawDeepPopupsProperty();
+            
+            DrawPopupSettings();
+            GUILayout.BeginHorizontal();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label("General Settings");
+            GUILayout.FlexibleSpace();
+            GUILayout.EndHorizontal();
+            EditorGUILayoutExtensions.DrawHorizontalLine();
+            
             DrawBoolPropertiesInGrid();
+            DrawDeepPopupsProperty();
             EditorGUILayout.EndVertical();
 
             DrawDefaultInspectorExcept(new string[]
@@ -199,13 +197,17 @@ namespace AdvancedPS.Editor
             EditorGUILayoutExtensions.DrawHorizontalLine();
             EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyShow"), new GUIContent("Show Key"), GUILayout.Width(width));
-            GUILayout.Space(5);
-            DrawTypeDropdown("inspectorShowDisplay", "Display:", typeof(IDisplay), width, "cachedShowSettings");
-            EditorGUILayout.EndVertical();
-            GUILayout.Space(5);
-            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedShowSettings"), new GUIContent("Display Settings"), true, GUILayout.Width(width));
-            GUILayout.Space(15);
+            if (isShowSettings)
+            {
+                GUILayout.Space(5);
+                DrawTypeDropdown("inspectorShowDisplay", "Display:", typeof(IDisplay), width, "cachedShowSettings");
+                EditorGUILayout.EndVertical();
+                GUILayout.Space(5);
+                EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedShowSettings"),
+                    new GUIContent("Display Settings"), true, GUILayout.Width(width));
+                GUILayout.Space(15);
+            }
             EditorGUILayout.EndVertical();
             GUILayout.EndVertical();
             
@@ -221,13 +223,17 @@ namespace AdvancedPS.Editor
             EditorGUILayoutExtensions.DrawHorizontalLine();
             EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
             EditorGUILayout.PropertyField(serializedObject.FindProperty("HotKeyHide"), new GUIContent("Hide Key"), GUILayout.Width(width));
-            GUILayout.Space(5);
-            DrawTypeDropdown("inspectorHideDisplay", "Display:", typeof(IDisplay), width, "cachedHideSettings");
-            EditorGUILayout.EndVertical();
-            GUILayout.Space(5);
-            EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedHideSettings"), new GUIContent("Display Settings"), true, GUILayout.Width(width));
-            GUILayout.Space(15);
+            if (isShowSettings)
+            {
+                GUILayout.Space(5);
+                DrawTypeDropdown("inspectorHideDisplay", "Display:", typeof(IDisplay), width, "cachedHideSettings");
+                EditorGUILayout.EndVertical();
+                GUILayout.Space(5);
+                EditorGUILayout.BeginVertical(APSEditorStyles.BackgroundStyle);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("cachedHideSettings"),
+                    new GUIContent("Display Settings"), true, GUILayout.Width(width));
+                GUILayout.Space(15);
+            }
             EditorGUILayout.EndVertical();
             GUILayout.EndVertical();
             
