@@ -28,25 +28,6 @@ namespace AdvancedPS.Core
         [Tooltip("This field can be null")]
         public Button closeButton;
         #endregion
-        
-        private void Reset()
-        {
-            MoveComponentToTop(this);
-        }
-        
-        private static void MoveComponentToTop(Component component)
-        {
-            Component[] components = component.gameObject.GetComponents<Component>();
-            int index = Array.IndexOf(components, component);
-
-            if (index > 1) 
-            {
-                for (int i = index; i > 1; i--)
-                {
-                    UnityEditorInternal.ComponentUtility.MoveComponentUp(component);
-                }
-            }
-        }
 
         /// <summary>
         /// Handler for close button press event.

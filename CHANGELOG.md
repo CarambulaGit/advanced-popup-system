@@ -1,4 +1,19 @@
 # Changelog
+## [1.9.0] - 2024-07-30
+### Fixed
+- Some incorrect behaviors
+### Rework
+- Optimization
+### Added
+- New popup settings UI in inspector
+- Code generation for Displays, Popups, APS
+- Configuring keys for show/hide popup
+- APS Displays Editor
+### Removed
+- Manual displays & settings classes
+### Updated
+- Documentation in code (tips)
+
 ## [1.2.1] - 2024-7-28
 ### Fixed
 - Animations lineary

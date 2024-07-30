@@ -69,11 +69,17 @@ namespace AdvancedPS.Core.Examples
                 popup.RootTransform.anchoredPosition = new Vector2(posX, posY);
                 
                 popup.Init();
-                popup.SetCachedDisplay<SlideDisplay>(new SlideSettings
-                {
-                    Easing = (EasingType)i,
-                    TargetPosition = new Vector3(posX, 0, 0)
-                });
+                popup.SetCachedDisplay<SlideDisplay, SlideDisplay>(
+                    new SlideSettings
+                    {
+                        Easing = (EasingType)i,
+                        TargetPosition = new Vector3(posX, 0, 0)
+                    },
+                    new SlideSettings
+                    {
+                        Easing = (EasingType)i
+                    }
+                );
                 popups.Add(popup);
                 
                 InfoBlock infoBlock = Instantiate(_infoBlockPrefab, _infoRoot);

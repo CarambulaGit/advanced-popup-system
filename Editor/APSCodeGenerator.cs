@@ -2,7 +2,7 @@
 using System.Text;
 using UnityEditor;
 
-namespace AdvancedPS.Core.System
+namespace AdvancedPS.Editor
 {
     public static class APSCodeGenerator
     {

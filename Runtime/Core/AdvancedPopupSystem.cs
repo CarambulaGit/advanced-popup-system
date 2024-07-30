@@ -7,7 +7,6 @@ using AdvancedPS.Core.System;
 using AdvancedPS.Core.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using Object = UnityEngine.Object;
 
 namespace AdvancedPS.Core
 {

@@ -85,14 +85,22 @@ namespace AdvancedPS.Core.Examples
                 float posX = i * (popupWidth + spacing) - (canvasWidth / 2) + (popupWidth / 2);
                 float posY = -canvasHeight / 2 + popup.RootTransform.sizeDelta.y / 2;
                 popup.RootTransform.anchoredPosition = new Vector2(posX, posY);
+
+                float duration = Random.Range(0.5f, 4);
+                EasingType type = (EasingType)Random.Range(0, easingTypesCount - 1);
                 
                 popup.Init();
-                popup.SetCachedDisplay<SlideDisplay>(new SlideSettings
-                {
-                    Duration = Random.Range(0.5f, 4),
-                    Easing = (EasingType)Random.Range(0, easingTypesCount - 1),
-                    TargetPosition = new Vector3(posX, 0, 0)
-                });
+                popup.SetCachedDisplay<SlideDisplay, SlideDisplay>(new SlideSettings
+                    {
+                        Duration = duration,
+                        Easing = type,
+                        TargetPosition = new Vector3(posX, 0, 0)
+                    },
+                    new SlideSettings
+                    {
+                        Duration = duration,
+                        Easing = type
+                    });
                 popups.Add(popup);
             }
             

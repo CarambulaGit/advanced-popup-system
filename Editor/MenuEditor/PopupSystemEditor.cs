@@ -14,18 +14,35 @@ namespace AdvancedPS.Editor
             Settings,
         }
         private string imagesPath;
+
+        private const string Version = "1.9.0";
         
-        private Tab currentTab = Tab.Layers;
+        private static Tab currentTab = Tab.Layers;
         
         private Texture2D bannerTexture;
         private Texture2D iconTexture;
         private Texture2D blackTexture;
         
-        [MenuItem("Tools/Advanced Popup System Menu")]
-        public static void ShowWindow()
+        [MenuItem("APS/Layers")]
+        public static void ShowLayers()
         {
             var window = GetWindow<PopupSystemEditor>("Popup System Editor");
-            window.titleContent = new GUIContent("Popup System Editor");
+            window.titleContent = new GUIContent($"Popup System Editor v{Version}");
+            currentTab = Tab.Layers;
+        }
+        [MenuItem("APS/Displays")]
+        public static void ShowDisplays()
+        {
+            var window = GetWindow<PopupSystemEditor>("Popup System Editor");
+            window.titleContent = new GUIContent($"Popup System Editor v{Version}");
+            currentTab = Tab.Displays;
+        }
+        [MenuItem("APS/Settings")]
+        public static void ShowSettings()
+        {
+            var window = GetWindow<PopupSystemEditor>("Popup System Editor");
+            window.titleContent = new GUIContent($"Popup System Editor v{Version}");
+            currentTab = Tab.Settings;
         }
 
         private void OnEnable()

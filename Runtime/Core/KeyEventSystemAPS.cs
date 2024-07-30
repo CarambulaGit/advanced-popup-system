@@ -2,6 +2,7 @@
 using System.Linq;
 using AdvancedPS.Core.System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.LowLevel;
 using UnityEngine.PlayerLoop;
 
@@ -15,6 +16,12 @@ namespace AdvancedPS.Core
         public static void Initialize()
         {
             IsEnabled = SettingsManager.Settings.KeyEventSystemEnabled;
+
+            if (UnityEngine.Object.FindObjectOfType<EventSystem>() == null)
+            {
+                Debug.LogError("[KeyEventSystemAPS] - EventSystem not found.");
+                return;
+            }
             
             var playerLoop = PlayerLoop.GetCurrentPlayerLoop();
             var updateSubsystemIndex = Array.FindIndex(playerLoop.subSystemList, subSystem => subSystem.type == typeof(Update));
@@ -39,18 +46,22 @@ namespace AdvancedPS.Core
 
             playerLoop.subSystemList[updateSubsystemIndex] = updateSubsystem;
             PlayerLoop.SetPlayerLoop(playerLoop);
+            
+            Debug.Log("[KeyEventSystemAPS] - initialized successfully");
         }
 
         private static void Update()
         {
             if (!IsEnabled || !Input.anyKeyDown) return;
-            
             foreach (var popup in AdvancedPopupSystem.AllPopups)
             {
-                if (!popup.IsBeVisible && popup.HotKeyShow.Any(Input.GetKeyDown) && AreParentsVisible(popup))
+                if (!popup.IsBeVisible && popup.HotKeyShow.Any(Input.GetKeyDown))
                 {
-                    popup.Show();
-                    break;
+                    if (AreParentsVisible(popup))
+                    {
+                        popup.Show();
+                        break;
+                    }
                 }
                 
                 if (popup.IsBeVisible && popup.HotKeyHide.Any(Input.GetKeyDown))
@@ -63,15 +74,23 @@ namespace AdvancedPS.Core
 
         private static bool AreParentsVisible(IAdvancedPopup popup)
         {
-            while (true)
+            Transform parentTransform = popup.transform.parent;
+
+            while (parentTransform != null)
             {
-                IAdvancedPopup parent = popup.transform.GetComponentInParent<IAdvancedPopup>();
-                
-                if (parent == null) return true;
-                if (!parent.IsBeVisible) return false;
-                
-                popup = parent;
+                IAdvancedPopup parentPopup = parentTransform.GetComponent<IAdvancedPopup>();
+                if (parentPopup != null)
+                {
+                    if (!parentPopup.IsBeVisible) return false;
+                    parentTransform = parentPopup.transform.parent;
+                }
+                else
+                {
+                    parentTransform = parentTransform.parent;
+                }
             }
+
+            return true;
         }
     }
 }

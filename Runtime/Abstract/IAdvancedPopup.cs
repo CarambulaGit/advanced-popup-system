@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using AdvancedPS.Core.Utils;
 using UnityEngine;
 
 namespace AdvancedPS.Core.System
@@ -85,8 +83,8 @@ namespace AdvancedPS.Core.System
         #endregion
         
         #region Private
-        [SerializeField] private string inspectorShowDisplay;
-        [SerializeField] private string inspectorHideDisplay;
+        //[SerializeField] private string inspectorShowDisplay;
+        //[SerializeField] private string inspectorHideDisplay;
         private CancellationTokenSource _source;
         #endregion
 
@@ -99,6 +97,25 @@ namespace AdvancedPS.Core.System
         {
             AdvancedPopupSystem.DeactivateAdvancedPopup(this);
         }
+        
+        private void Reset()
+        {
+            MoveComponentToTop(this);
+        }
+        
+        private static void MoveComponentToTop(Component component)
+        {
+            Component[] components = component.gameObject.GetComponents<Component>();
+            int index = Array.IndexOf(components, component);
+
+            if (index > 1) 
+            {
+                for (int i = index; i > 1; i--)
+                {
+                    UnityEditorInternal.ComponentUtility.MoveComponentUp(component);
+                }
+            }
+        }
 
         /// <summary>
         /// Method invoking manual or from Awake if "ManualInit" - false. Please keep base.Init() first of all when override.
@@ -106,11 +123,6 @@ namespace AdvancedPS.Core.System
         /// </summary>
         public virtual void Init()
         {
-            //if (string.IsNullOrEmpty(inspectorHideDisplay) || string.IsNullOrEmpty(inspectorHideDisplay) 
-            //                                               || !SetCachedDisplayFromString())
-            //{
-            //    
-            //}
             SetCachedDisplay<ScaleDisplay, ScaleDisplay>();
             
             if (RootTransform == null)
@@ -157,39 +169,39 @@ namespace AdvancedPS.Core.System
             CachedHideSettings = hideSettings;
         }
         
-        public bool SetCachedDisplayFromString()
-        {
-            Type showDisplayType = Type.GetType(inspectorShowDisplay);
-            Type hideDisplayType = Type.GetType(inspectorHideDisplay);
-
-            if (showDisplayType == null)
-            {
-                Debug.LogWarning($"Show type {inspectorShowDisplay} not found.");
-                return false;
-            }
-            if (hideDisplayType == null)
-            {
-                Debug.LogWarning($"Hide type {inspectorHideDisplay} not found.");
-                return false;
-            }
-
-            var method = typeof(IAdvancedPopup).GetMethods(BindingFlags.Public | BindingFlags.Instance)
-                .Where(m => m.Name == nameof(SetCachedDisplay) 
-                            && m.IsGenericMethodDefinition 
-                            && m.GetGenericArguments().Length == 2).FirstOrDefault();
-            if (method == null)
-            {
-                Debug.LogWarning($"Method {nameof(SetCachedDisplay)} not found or ambiguous in {typeof(IAdvancedPopup)}");
-                return false;
-            }
-            MethodInfo genericMethod = method.MakeGenericMethod(showDisplayType, hideDisplayType);
-            
-            CachedShowSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(showDisplayType.Name) + "Settings"));
-            CachedHideSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(hideDisplayType.Name) + "Settings"));
-            
-            genericMethod.Invoke(this, new object[] { CachedShowSettings, CachedHideSettings });
-            return true;
-        }
+        //public bool SetCachedDisplayFromString()
+        //{
+        //    Type showDisplayType = Type.GetType(inspectorShowDisplay);
+        //    Type hideDisplayType = Type.GetType(inspectorHideDisplay);
+        //
+        //    if (showDisplayType == null)
+        //    {
+        //        Debug.LogWarning($"Show type {inspectorShowDisplay} not found.");
+        //        return false;
+        //    }
+        //    if (hideDisplayType == null)
+        //    {
+        //        Debug.LogWarning($"Hide type {inspectorHideDisplay} not found.");
+        //        return false;
+        //    }
+        //
+        //    var method = typeof(IAdvancedPopup).GetMethods(BindingFlags.Public | BindingFlags.Instance)
+        //        .Where(m => m.Name == nameof(SetCachedDisplay) 
+        //                    && m.IsGenericMethodDefinition 
+        //                    && m.GetGenericArguments().Length == 2).FirstOrDefault();
+        //    if (method == null)
+        //    {
+        //        Debug.LogWarning($"Method {nameof(SetCachedDisplay)} not found or ambiguous in {typeof(IAdvancedPopup)}");
+        //        return false;
+        //    }
+        //    MethodInfo genericMethod = method.MakeGenericMethod(showDisplayType, hideDisplayType);
+        //    
+        //    CachedShowSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(showDisplayType.Name) + "Settings"));
+        //    CachedHideSettings = (BaseSettings)Activator.CreateInstance(TypeHelper.GetTypeByName(TypeHelper.RemoveDisplaySuffix(hideDisplayType.Name) + "Settings"));
+        //    
+        //    genericMethod.Invoke(this, new object[] { CachedShowSettings, CachedHideSettings });
+        //    return true;
+        //}
 
         /// <summary>
         /// Check if popup exist in deep of this popup.
