@@ -17,7 +17,11 @@ namespace AdvancedPS.Core
         {
             IsEnabled = SettingsManager.Settings.KeyEventSystemEnabled;
 
+#if UNITY_2023_1_OR_NEWER || UNITY_2022_2_5 || UNITY_2021_3_18 || UNITY_2020_3_45
+            if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() == null)
+#else
             if (UnityEngine.Object.FindObjectOfType<EventSystem>() == null)
+#endif
             {
                 Debug.LogError("[KeyEventSystemAPS] - EventSystem not found.");
                 return;
