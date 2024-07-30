@@ -126,10 +126,10 @@ namespace AdvancedPS.Editor
             if (displayName == null)
                 return string.Empty;
 
-            displayName = Regex.Replace(displayName, @"\s+", "_");
-            displayName = Regex.Replace(displayName, "_+", "_");
+            displayName = Regex.Replace(displayName, @"[\s-]+", ""); // Remove spaces and dashes
+            displayName = Regex.Replace(displayName, "_+", ""); // Remove consecutive underscores
 
-            return !Regex.IsMatch(displayName, @"^[a-zA-Z0-9_]+$") ? null : displayName;
+            return !Regex.IsMatch(displayName, @"^[a-zA-Z]+$") ? null : displayName;
         }
         
         private static void SaveDisplayChanges()

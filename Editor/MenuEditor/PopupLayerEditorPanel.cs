@@ -144,11 +144,11 @@ namespace AdvancedPS.Editor
             if (enumName == null)
                 return string.Empty;
 
-            enumName = Regex.Replace(enumName, @"\s+", "_");
-            enumName = Regex.Replace(enumName, "_+", "_");
-            enumName = enumName.ToUpper();
+            enumName = Regex.Replace(enumName, @"[\s-]+", "_"); // Convert spaces and dashes to underscores
+            enumName = Regex.Replace(enumName, "_+", "_"); // Remove consecutive underscores
+            enumName = enumName.ToUpper(); // Convert to uppercase
 
-            return !Regex.IsMatch(enumName, @"^[A-Z0-9_]+$") ? null : enumName;
+            return !Regex.IsMatch(enumName, @"^[A-Z_]+$") ? null : enumName;
         }
 
         private static void SaveEnumChanges()

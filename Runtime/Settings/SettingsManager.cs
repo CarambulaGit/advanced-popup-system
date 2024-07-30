@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using AdvancedPS.Core.Utils;
-using Newtonsoft.Json;
+using Unity.Plastic.Newtonsoft.Json;
 
 namespace AdvancedPS.Core.System
 {
