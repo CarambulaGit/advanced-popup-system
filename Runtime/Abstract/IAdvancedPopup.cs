@@ -98,6 +98,7 @@ namespace AdvancedPS.Core.System
             AdvancedPopupSystem.DeactivateAdvancedPopup(this);
         }
         
+#if UNITY_EDITOR
         private void Reset()
         {
             MoveComponentToTop(this);
@@ -116,6 +117,7 @@ namespace AdvancedPS.Core.System
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Method invoking manual or from Awake if "ManualInit" - false. Please keep base.Init() first of all when override.

@@ -1,4 +1,9 @@
 # Changelog
+## [1.9.1] - 2024-07-30
+### Fixed
+- APS Key Event System initialization
+- Platform compatibility
+
 ## [1.9.0] - 2024-07-30
 ### Fixed
 - Some incorrect behaviors

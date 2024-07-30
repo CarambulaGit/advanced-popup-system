@@ -123,7 +123,7 @@ namespace AdvancedPS.Core.Utils
             }
             return null;
 #else
-            string path = Path.Combine(Application.dataPath, PackageFolderName);
+            string path = Path.Combine(UnityEngine.Application.dataPath, PackageFolderName);
             if (Directory.Exists(path))
             {
                 return path;
